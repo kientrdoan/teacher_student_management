@@ -1,0 +1,1 @@
+export const GET_ALL_SEMESTER = "GET_ALL_SEMESTER"
