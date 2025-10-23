@@ -8,12 +8,14 @@ const menuItems = [
 ]
 
 export default function SlideBar() {
+
+
   return (
     <div className="bg-[#1e293b] text-white w-64 flex-shrink-0 flex flex-col shadow-xl">
       <div className="flex items-center justify-center p-6 border-b border-slate-700">
         <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight">Student</h1>
-          <p className="text-sm text-slate-400 mt-1">Management System</p>
+          <h1 className="text-2xl font-bold tracking-tight">Teacher</h1>
+          {/* <p className="text-sm text-slate-400 mt-1">Management System</p> */}
         </div>
       </div>
 

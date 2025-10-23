@@ -2,11 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { FiUser } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { TOKEN } from "../../utils/Config";
+import { useSelector } from "react-redux";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+    const user = useSelector((state) => state.UserReducer.user)
 
   // Đóng dropdown khi click ra ngoài
   useEffect(() => {
@@ -39,7 +42,7 @@ export default function Header() {
           <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center">
             <FiUser className="text-white text-sm" />
           </div>
-          <span className="text-gray-700 text-sm font-medium">Admin</span>
+          <span className="text-gray-700 text-sm font-medium">{user.name}</span>
         </div>
 
         {open && (
