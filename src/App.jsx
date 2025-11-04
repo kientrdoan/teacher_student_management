@@ -13,6 +13,10 @@ import Course from "./pages/Course";
 import Score from "./pages/Score";
 import { LOGIN_ACTION } from "./redux/types/UserType";
 import Student from "./pages/Student";
+import ScoreManagement from "./pages/ScoreManagement";
+import TimeTableSemester from "./pages/TimeTableSemester";
+import AttendManage from "./pages/AttendManage";
+import Attendace from "./pages/Attendace";
 
 function App() {
   const dispatch = useDispatch();
@@ -59,9 +63,13 @@ function App() {
             <Route index element={<Home />} />
             <Route path="profile" element={<Profile />} />
             <Route path="time-table" element={<TimeTable />} />
+            <Route path="time-table-semester" element={<TimeTableSemester />} />
             <Route path="courses" element={<Course />} />
             <Route path="/courses/students/:id" element={<Student></Student>} />
-            <Route path="scores" element={<Score />} />
+            <Route path="score-management" element={<ScoreManagement />} />
+            <Route path="scores/:id" element={<Score />} />
+            <Route path="attend-management" element={<AttendManage />} />
+            <Route path="attend/:id" element={<Attendace />} />
           </Route>
         </Route>
         <Route path="/login" element={<Login />} />

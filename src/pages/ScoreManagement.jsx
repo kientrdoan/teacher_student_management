@@ -15,20 +15,20 @@ import {
   BookOutlined,
 } from "@ant-design/icons";
 import { NavLink } from "react-router-dom";
-import { getAllCourseByTeacherAndSemesterAction } from "../redux/actions/CourseAction";
+import {
+  getAllCourseByTeacherAndSemesterAction,
+} from "../redux/actions/CourseAction";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAllSemeterAction,
   getCurrentSemeterAction,
 } from "../redux/actions/SemesterAction";
 
-export default function ClassSchedule() {
+export default function ScoreManagement() {
   const user = useSelector((state) => state.UserReducer.user);
   const courses = useSelector((state) => state.CourseReducer.courses);
   const semesters = useSelector((state) => state.SemesterReducer.semesters);
-  const semester_detail = useSelector(
-    (state) => state.SemesterReducer.semester_detail
-  );
+  const semester_detail = useSelector((state) => state.SemesterReducer.semester_detail);
 
   const dispatch = useDispatch();
   const [searchText, setSearchText] = useState("");
@@ -46,7 +46,6 @@ export default function ClassSchedule() {
     weekday: true,
   });
 
-  // 🔹 Fetch học kỳ và lớp học phần
   useEffect(() => {
     if (!user?.user_id) return;
 
@@ -86,17 +85,107 @@ export default function ClassSchedule() {
   };
 
   const columnMenu = {
-    items: Object.keys(visibleColumns).map((key) => ({
-      key,
-      label: (
-        <Checkbox
-          checked={visibleColumns[key]}
-          onChange={() => toggleColumn(key)}
-        >
-          {key.replace("_", " ").toUpperCase()}
-        </Checkbox>
-      ),
-    })),
+    items: [
+      {
+        key: "id",
+        label: (
+          <Checkbox
+            checked={visibleColumns.id}
+            onChange={() => toggleColumn("id")}
+          >
+            ID
+          </Checkbox>
+        ),
+      },
+      {
+        key: "semester",
+        label: (
+          <Checkbox
+            checked={visibleColumns.semester}
+            onChange={() => toggleColumn("semester")}
+          >
+            Semester
+          </Checkbox>
+        ),
+      },
+      {
+        key: "class_st",
+        label: (
+          <Checkbox
+            checked={visibleColumns.class_st}
+            onChange={() => toggleColumn("class_st")}
+          >
+            Class
+          </Checkbox>
+        ),
+      },
+      {
+        key: "subject",
+        label: (
+          <Checkbox
+            checked={visibleColumns.subject}
+            onChange={() => toggleColumn("subject")}
+          >
+            Subject
+          </Checkbox>
+        ),
+      },
+      {
+        key: "credit",
+        label: (
+          <Checkbox
+            checked={visibleColumns.credit}
+            onChange={() => toggleColumn("credit")}
+          >
+            Credit
+          </Checkbox>
+        ),
+      },
+      {
+        key: "room",
+        label: (
+          <Checkbox
+            checked={visibleColumns.room}
+            onChange={() => toggleColumn("room")}
+          >
+            Room
+          </Checkbox>
+        ),
+      },
+      {
+        key: "start_date",
+        label: (
+          <Checkbox
+            checked={visibleColumns.start_date}
+            onChange={() => toggleColumn("start_date")}
+          >
+            Start date
+          </Checkbox>
+        ),
+      },
+      {
+        key: "end_date",
+        label: (
+          <Checkbox
+            checked={visibleColumns.end_date}
+            onChange={() => toggleColumn("end_date")}
+          >
+            End date
+          </Checkbox>
+        ),
+      },
+      {
+        key: "weekday",
+        label: (
+          <Checkbox
+            checked={visibleColumns.weekday}
+            onChange={() => toggleColumn("weekday")}
+          >
+            Weekday
+          </Checkbox>
+        ),
+      },
+    ],
   };
 
   const allColumns = [
@@ -113,7 +202,7 @@ export default function ClassSchedule() {
       visible: visibleColumns.class_st,
       render: (_, record) => (
         <NavLink
-          to={`/courses/students/${record.id}`}
+          to={`/scores/${record.id}`}
           className='text-indigo-600 hover:underline font-medium'
         >
           {record.class_st.name}
@@ -158,6 +247,12 @@ export default function ClassSchedule() {
       ),
     },
     {
+      title: "Max Capacity",
+      dataIndex: "max_capacity",
+      key: "max_capacity",
+      visible: visibleColumns.max_capacity,
+    },
+    {
       title: "Start date",
       dataIndex: "start_date",
       key: "start_date",
@@ -189,10 +284,10 @@ export default function ClassSchedule() {
             </div>
             <div>
               <h1 className='text-2xl font-bold text-gray-900'>
-                Class Schedule
+                Score Management
               </h1>
               <p className='text-sm text-gray-500'>
-                Manage and view class schedules
+                Manage and view score
               </p>
             </div>
           </div>

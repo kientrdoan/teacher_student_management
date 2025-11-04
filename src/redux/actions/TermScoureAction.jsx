@@ -1,17 +1,19 @@
 /* eslint-disable no-unused-vars */
 
-import { studentService } from "../../../service/StudentService";
-import { GET_ALL_STUDENT_BY_COURSE } from "../types/StudentType";
+import { scoreService } from "../../../service/TermScoreService";
+import { GET_ALL_SCORE } from "../types/TermScoreType";
 
 
-export const getAllStudentAction = (course_id) => {
+export const getAllScoreStudentAction = (course_id) => {
   return async (dispatch) => {
     try {
-      const result = await studentService.getAllStudent(course_id)
+        console.log("course_id", course_id);
+      const result = await scoreService.getAllScoreStudent(course_id)
+      console.log("result", result);
       if (result.status === 200) {
         dispatch({
-          type: GET_ALL_STUDENT_BY_COURSE,
-          students: result.data.data
+          type: GET_ALL_SCORE,
+          scores_students: result.data.data
 
         });
         return { success: true, data: result.data.data };
@@ -23,16 +25,11 @@ export const getAllStudentAction = (course_id) => {
   };
 };
 
-export const updateScoreStudentAction = (course_id) => {
+export const updateScoreStudentAction = (course_id, user_id, payload) => {
   return async (dispatch) => {
     try {
-      const result = await studentService.upda(course_id)
+      const result = await scoreService.updateScoreStudent(course_id, user_id, payload)
       if (result.status === 200) {
-        dispatch({
-          type: GET_ALL_STUDENT_BY_COURSE,
-          students: result.data.data
-
-        });
         return { success: true, data: result.data.data };
       }
     } catch (error) {
@@ -41,3 +38,4 @@ export const updateScoreStudentAction = (course_id) => {
     }
   };
 };
+

@@ -2,9 +2,12 @@ import { NavLink } from "react-router-dom"
 import { FiHome, FiUsers, FiBook, FiCalendar, FiGrid, FiLayers, FiBookOpen, FiUser, FiUserCheck } from "react-icons/fi"
 
 const menuItems = [
-  { name: "Thời khoá biểu", path: "/time-table", icon: FiGrid },
+  { name: "Thông tin", path: "/profile", icon: FiGrid },
+  { name: "Thời khoá biểu tuần", path: "/time-table", icon: FiGrid },
+  { name: "Thời khoá biểu học kỳ", path: "/time-table-semester", icon: FiGrid },
   { name: "Danh sách lớp học", path: "/courses", icon: FiLayers },
-  // { name: "Quản lý điểm", path: "/scores", icon: FiUsers },
+  { name: "Quản lý điểm", path: "/score-management", icon: FiLayers },
+  { name: "Quản lý điểm danh", path: "/attend-management", icon: FiLayers },
 ]
 
 export default function SlideBar() {

@@ -10,7 +10,7 @@ import {
 } from "react-icons/md";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllSemeterAction } from "../redux/actions/SemesterAction";
+import { getAllSemeterAction, getCurrentSemeterAction } from "../redux/actions/SemesterAction";
 import { getAllCourseByTeacherAndSemesterAction } from "../redux/actions/CourseAction";
 
 // 🔹 Hàm sinh tuần dựa vào ngày bắt đầu & kết thúc
@@ -70,6 +70,7 @@ export default function TimeTable() {
   const dispatch = useDispatch();
 
   const semesters = useSelector((state) => state.SemesterReducer.semesters);
+  const semester_detail = useSelector((state) => state.SemesterReducer.semester_detail)
   const courses = useSelector((state) => state.CourseReducer.courses);
   const user = useSelector((state) => state.UserReducer.user);
 
@@ -81,14 +82,15 @@ export default function TimeTable() {
   // 🔹 Lấy danh sách học kỳ
   useEffect(() => {
     dispatch(getAllSemeterAction());
+    dispatch(getCurrentSemeterAction())
   }, [dispatch]);
 
-  // 🔹 Set học kỳ đầu tiên mặc định
+  // ✅ Sửa đúng logic chọn học kỳ hiện tại
   useEffect(() => {
-    if (semesters?.length > 0 && !selectedSemester) {
-      setSelectedSemester(semesters[0].id.toString());
+    if (semester_detail && semester_detail.id && !selectedSemester) {
+      setSelectedSemester(semester_detail.id.toString())
     }
-  }, [semesters, selectedSemester]);
+  }, [semester_detail, selectedSemester])
 
   // 🔹 Lấy danh sách môn học theo học kỳ
   useEffect(() => {
