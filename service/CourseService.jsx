@@ -9,6 +9,10 @@ export class CourseService extends BaseService {
     return this.get(`/teachers/courses/${teacher_id}`);
   };
 
+  getAllCourseByCourseId = (course_id) => {
+    return this.get(`/teachers/courses/${course_id}`);
+  };
+
   getCourseByTeacherAndSemester = (teacher_id, semester_id) => {
     return this.get(`/teachers/courses/${teacher_id}/${semester_id}`);
   };

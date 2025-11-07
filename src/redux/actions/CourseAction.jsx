@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 
 import { courseService } from "../../../service/CourseService";
-import { GET_ALL_COURSE_BY_TEACHER, GET_ALL_COURSE_BY_TEACHER_SEMESTER } from "../types/CourseType";
+import { GET_ALL_COURSE_BY_COURSE, GET_ALL_COURSE_BY_TEACHER, GET_ALL_COURSE_BY_TEACHER_SEMESTER } from "../types/CourseType";
 
 
 export const getAllCourseByTeacherAction = (teacher_id) => {
@@ -12,6 +12,24 @@ export const getAllCourseByTeacherAction = (teacher_id) => {
         dispatch({
           type: GET_ALL_COURSE_BY_TEACHER,
           courses: result.data.data,
+        });
+        return { success: true, data: result.data.data };
+      }
+    } catch (error) {
+      console.log("error", error);
+      return { success: false, error };
+    }
+  };
+};
+
+export const getAllCourseByCourseId = (course_id) => {
+  return async (dispatch) => {
+    try {
+      const result = await courseService.getAllCourseByCourseId(course_id);
+      if (result.status === 200) {
+        dispatch({
+          type: GET_ALL_COURSE_BY_COURSE,
+          course_detail: result.data.data,
         });
         return { success: true, data: result.data.data };
       }

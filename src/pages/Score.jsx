@@ -26,7 +26,6 @@ export default function Score() {
     }
   }, [id, dispatch]);
 
-  // 🟢 Mở modal chỉnh sửa điểm
   const handleEdit = (record) => {
     setEditingRecord(record);
     form.setFieldsValue({
@@ -36,7 +35,6 @@ export default function Score() {
     setIsModalVisible(true);
   };
 
-  // 🟢 Lưu điểm
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
@@ -51,7 +49,6 @@ export default function Score() {
     }
   };
 
-  // 🟢 Cấu hình bảng
   const columns = [
     {
       title: "Mã SV",
