@@ -32,7 +32,6 @@ export default function TimeTableSemester() {
     }
   }, [semester_detail, semester]);
 
-  // 🧩 Khi semester thay đổi → gọi API
   useEffect(() => {
     const fetchCourses = async () => {
       if (!user?.user_id || !semester) return;

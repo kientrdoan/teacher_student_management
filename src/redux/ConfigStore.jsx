@@ -7,6 +7,7 @@ import { SemesterReducer } from './reducers/SemesterReducer';
 import { StudentReducer } from './reducers/StudentReducer';
 import { TermScoreReducer } from './reducers/TermScoreReducer';
 import { AttendReducer } from './reducers/AttendReducer';
+import { LessonReducer } from './reducers/LessonReducer';
 
 const dummyReducer = (state = {}, ) => state;
 
@@ -19,6 +20,7 @@ const rootReducer = combineReducers({
   StudentReducer,
   TermScoreReducer,
   AttendReducer,
+  LessonReducer,
   dummy: dummyReducer
 })
 

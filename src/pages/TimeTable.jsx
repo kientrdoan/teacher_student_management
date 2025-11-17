@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getAllSemeterAction, getCurrentSemeterAction } from "../redux/actions/SemesterAction";
 import { getAllCourseByTeacherAndSemesterAction } from "../redux/actions/CourseAction";
 
-// 🔹 Hàm sinh tuần dựa vào ngày bắt đầu & kết thúc
+// 🔹 Hàm sinh tuần
 function generateAllWeeks(startDate, endDate) {
   const weeks = [];
   let start = dayjs(startDate);
@@ -26,9 +26,7 @@ function generateAllWeeks(startDate, endDate) {
 
     weeks.push({
       value: weekNumber.toString(),
-      label: `Tuần ${weekNumber} [${start.format(
-        "DD/MM/YYYY"
-      )} - ${actualEnd.format("DD/MM/YYYY")}]`,
+      label: `Tuần ${weekNumber} [${start.format("DD/MM/YYYY")} - ${actualEnd.format("DD/MM/YYYY")}]`,
       start: start.format("YYYY-MM-DD"),
       end: actualEnd.format("YYYY-MM-DD"),
       weekNumber,
@@ -42,69 +40,71 @@ function generateAllWeeks(startDate, endDate) {
 }
 
 const DAYS = [
-  { key: 2, label: "Thứ 2" },
-  { key: 3, label: "Thứ 3" },
-  { key: 4, label: "Thứ 4" },
-  { key: 5, label: "Thứ 5" },
-  { key: 6, label: "Thứ 6" },
-  { key: 7, label: "Thứ 7" },
-  { key: 1, label: "Chủ Nhật" },
+  { key: 0, label: "Thứ 2" },
+  { key: 1, label: "Thứ 3" },
+  { key: 2, label: "Thứ 4" },
+  { key: 3, label: "Thứ 5" },
+  { key: 4, label: "Thứ 6" },
+  { key: 5, label: "Thứ 7" },
 ];
 
 const PERIODS = Array.from({ length: 10 }, (_, i) => i + 1);
 
 function convertWeekday(weekday) {
   const map = {
-    Monday: 2,
-    Tuesday: 3,
-    Wednesday: 4,
-    Thursday: 5,
-    Friday: 6,
-    Saturday: 7,
-    Sunday: 1,
+    Monday: 0,
+    Tuesday: 1,
+    Wednesday: 2,
+    Thursday: 3,
+    Friday: 4,
+    Saturday: 5,
   };
-  return map[weekday] || null;
+  return map[weekday] ?? null;
 }
 
 export default function TimeTable() {
   const dispatch = useDispatch();
 
   const semesters = useSelector((state) => state.SemesterReducer.semesters);
-  const semester_detail = useSelector((state) => state.SemesterReducer.semester_detail)
+  const semester_detail = useSelector((state) => state.SemesterReducer.semester_detail);
   const courses = useSelector((state) => state.CourseReducer.courses);
   const user = useSelector((state) => state.UserReducer.user);
-
-  console.log("course page", courses)
 
   const [selectedSemester, setSelectedSemester] = useState(null);
   const [selectedWeek, setSelectedWeek] = useState(null);
 
-  // 🔹 Lấy danh sách học kỳ
+  // Lấy học kỳ
   useEffect(() => {
     dispatch(getAllSemeterAction());
-    dispatch(getCurrentSemeterAction())
+    dispatch(getCurrentSemeterAction());
   }, [dispatch]);
 
-  // ✅ Sửa đúng logic chọn học kỳ hiện tại
+  // Chọn học kỳ hiện tại mặc định
   useEffect(() => {
-    if (semester_detail && semester_detail.id && !selectedSemester) {
-      setSelectedSemester(semester_detail.id.toString())
+    if (semester_detail?.id && !selectedSemester) {
+      setSelectedSemester(semester_detail.id.toString());
     }
-  }, [semester_detail, selectedSemester])
+  }, [semester_detail, selectedSemester]);
 
-  // 🔹 Lấy danh sách môn học theo học kỳ
+  // Lấy course theo học kỳ
   useEffect(() => {
     if (selectedSemester && user?.user_id) {
-      dispatch(
-        getAllCourseByTeacherAndSemesterAction(user.user_id, selectedSemester)
-      );
+      dispatch(getAllCourseByTeacherAndSemesterAction(user.user_id, selectedSemester));
     }
-  }, [dispatch, user.user_id, selectedSemester]);
+  }, [dispatch, user?.user_id, selectedSemester]);
 
-  // 🔹 Chuẩn hóa dữ liệu course trả về từ API
+  // 🔹 Chuẩn hóa course
   const normalizedCourses = useMemo(() => {
-    return (courses || []).map((c) => {
+    if (!Array.isArray(courses)) return [];
 
+    return courses.map((c) => {
+      const startPeriod = c.start_period;
+      const periodCount = c.period_count || 4; // Mặc định 4 tiết nếu API không trả
+
+      const time_period = Array.from(
+        { length: periodCount },
+        (_, i) => startPeriod + i
+      ).filter(p => p >= 1 && p <= 10); // Chỉ lấy tiết hợp lệ
 
       return {
         id: c.id,
@@ -112,84 +112,71 @@ export default function TimeTable() {
         end_date: c.end_date,
         weekday: convertWeekday(c.weekday),
         subject: {
-          code: c.subject?.code,
-          name: c.subject?.name,
-          credit: c.subject?.credit,
+          code: c.subject?.code || "N/A",
+          name: c.subject?.name || "Chưa có tên",
+          credit: c.subject?.credit || 0,
         },
         class_st: c.class_st?.name || "Chưa cập nhật",
-        // teacher: c.teacher || { name: "Chưa cập nhật", degree: "" },
         room: c.room?.code || "Chưa cập nhật",
-        time_period: c.start_period
-          ? [
-              c.start_period,
-              c.start_period + 1,
-              c.start_period + 2,
-              c.start_period + 3,
-            ]
-          : [],
+        time_period, // Danh sách tiết liên tục
       };
-    });
+    }).filter(c => c.weekday !== null && c.time_period.length > 0);
   }, [courses]);
 
-  // 🔹 Sinh danh sách tuần dựa vào học kỳ
+  // 🔹 Sinh danh sách tuần
   const weeks = useMemo(() => {
-    if (!selectedSemester || semesters.length === 0) return [];
+    if (!selectedSemester || !semesters?.length) return [];
 
-    const selected = semesters.find(
-      (s) => s.id.toString() === selectedSemester
-    );
-    if (!selected || !selected.start_date || !selected.end_date) return [];
+    const selected = semesters.find(s => s.id.toString() === selectedSemester);
+    if (!selected?.start_date || !selected?.end_date) return [];
 
     return generateAllWeeks(selected.start_date, selected.end_date);
   }, [selectedSemester, semesters]);
 
-  // 🔹 Set tuần đầu tiên mặc định
+  // Chọn tuần đầu tiên
   useEffect(() => {
     if (weeks.length > 0 && !selectedWeek) {
       setSelectedWeek(weeks[0].value);
     }
   }, [weeks, selectedWeek]);
 
-  const selectedWeekData = weeks.find((w) => w.value === selectedWeek);
+  const selectedWeekData = weeks.find(w => w.value === selectedWeek);
 
-  // 🔹 Lọc các course thuộc tuần đã chọn
+  // 🔹 Lọc course thuộc tuần hiện tại
   const filteredCourses = useMemo(() => {
-    if (!selectedWeekData) return [];
+    if (!selectedWeekData || !normalizedCourses.length) return [];
 
-    return normalizedCourses.filter((course) => {
-      if (!course.start_date || !course.end_date) return false;
+    const weekStart = dayjs(selectedWeekData.start);
+    const weekEnd = dayjs(selectedWeekData.end);
+
+    return normalizedCourses.filter(course => {
+      if (!course.start_date || !course.end_date || course.weekday === null) return false;
 
       const courseStart = dayjs(course.start_date);
       const courseEnd = dayjs(course.end_date);
-      const weekStart = dayjs(selectedWeekData.start);
-      const weekEnd = dayjs(selectedWeekData.end);
 
-      return (
-        courseEnd.isAfter(weekStart) &&
-        courseStart.isBefore(weekEnd.add(1, "day"))
-      );
+      // Course phải có ít nhất 1 ngày trùng với tuần
+      return courseStart.isBefore(weekEnd.add(1, 'day')) && courseEnd.isAfter(weekStart);
     });
   }, [normalizedCourses, selectedWeekData]);
 
-  // 🔹 Map truy cập course theo ngày - tiết
+  // 🔹 Tạo map course theo (weekday-period)
   const courseMap = useMemo(() => {
     const map = new Map();
-    filteredCourses.forEach((course) => {
-      if (course.weekday && course.time_period.length > 0) {
-        course.time_period.forEach((period) => {
-          const key = `${course.weekday}-${period}`;
-          map.set(key, course);
-        });
-      }
+    filteredCourses.forEach(course => {
+      course.time_period.forEach(period => {
+        const key = `${course.weekday}-${period}`;
+        map.set(key, { ...course, isFirst: period === course.time_period[0] });
+      });
     });
     return map;
   }, [filteredCourses]);
 
-  // 🔹 Xác định cell cần merge
-  const renderedCells = useMemo(() => {
+  // 🔹 Xác định cell bị merge (không render)
+  const mergedCells = useMemo(() => {
     const set = new Set();
-    filteredCourses.forEach((course) => {
-      if (course.weekday && course.time_period.length > 1) {
+    filteredCourses.forEach(course => {
+      if (course.time_period.length > 1) {
         for (let i = 1; i < course.time_period.length; i++) {
           set.add(`${course.weekday}-${course.time_period[i]}`);
         }
@@ -201,71 +188,57 @@ export default function TimeTable() {
   const getCourseForCell = (day, period) => courseMap.get(`${day}-${period}`);
 
   const handlePreviousWeek = () => {
-    const currentIndex = weeks.findIndex((w) => w.value === selectedWeek);
-    if (currentIndex > 0) setSelectedWeek(weeks[currentIndex - 1].value);
+    const idx = weeks.findIndex(w => w.value === selectedWeek);
+    if (idx > 0) setSelectedWeek(weeks[idx - 1].value);
   };
 
   const handleNextWeek = () => {
-    const currentIndex = weeks.findIndex((w) => w.value === selectedWeek);
-    if (currentIndex < weeks.length - 1)
-      setSelectedWeek(weeks[currentIndex + 1].value);
+    const idx = weeks.findIndex(w => w.value === selectedWeek);
+    if (idx < weeks.length - 1) setSelectedWeek(weeks[idx + 1].value);
   };
 
   return (
     <div style={{ maxWidth: 1600, margin: "0 auto" }}>
       {/* Header */}
-      <div
-        style={{
-          background: "#1890ff",
-          color: "white",
-          padding: "16px",
-          borderRadius: "8px 8px 0 0",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
+      <div style={{
+        background: "#1890ff",
+        color: "white",
+        padding: "16px",
+        borderRadius: "8px 8px 0 0",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <MdCalendarToday size={24} />
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>
             THỜI KHÓA BIỂU DẠNG TUẦN
           </h1>
         </div>
-        <Button
-          type="text"
-          icon={<MdFullscreen size={20} />}
-          style={{ color: "white" }}
-        />
+        <Button type="text" icon={<MdFullscreen size={20} />} style={{ color: "white" }} />
       </div>
 
       {/* Bộ lọc */}
-      <div
-        style={{
-          background: "white",
-          border: "1px solid #d9d9d9",
-          borderTop: "none",
-          padding: 16,
-        }}
-      >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-            gap: 16,
-            marginBottom: 16,
-          }}
-        >
+      <div style={{
+        background: "white",
+        border: "1px solid #d9d9d9",
+        borderTop: "none",
+        padding: 16,
+      }}>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+          gap: 16,
+        }}>
           <Select
             placeholder="Chọn học kỳ"
             value={selectedSemester}
             onChange={setSelectedSemester}
             style={{ width: "100%" }}
-            options={
-              semesters?.map((item) => ({
-                value: item.id.toString(),
-                label: `${item.semesters} - Năm học ${item.year}`,
-              })) || []
-            }
+            options={semesters?.map(item => ({
+              value: item.id.toString(),
+              label: `${item.semesters} - Năm học ${item.year}`,
+            })) || []}
           />
 
           <Select
@@ -279,81 +252,66 @@ export default function TimeTable() {
       </div>
 
       {/* Bảng TKB */}
-      <div
-        style={{
-          background: "white",
-          border: "1px solid #d9d9d9",
-          borderTop: "none",
-          borderRadius: "0 0 8px 8px",
-          overflow: "hidden",
-        }}
-      >
+      <div style={{
+        background: "white",
+        border: "1px solid #d9d9d9",
+        borderTop: "none",
+        borderRadius: "0 0 8px 8px",
+        overflow: "hidden",
+      }}>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "#1890ff", color: "white" }}>
-                <th
-                  style={{
-                    border: "1px solid #40a9ff",
-                    padding: 8,
-                    width: 100,
-                    position: "sticky",
-                    left: 0,
-                    background: "#1890ff",
-                    zIndex: 10,
-                  }}
-                >
-                  <div
-                    onClick={handlePreviousWeek}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      cursor: "pointer",
-                      padding: 4,
-                      borderRadius: 4,
-                    }}
-                  >
+                <th style={{
+                  border: "1px solid #40a9ff",
+                  padding: 8,
+                  width: 100,
+                  position: "sticky",
+                  left: 0,
+                  background: "#1890ff",
+                  zIndex: 10,
+                }}>
+                  <div onClick={handlePreviousWeek} style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    cursor: "pointer",
+                    padding: 4,
+                    borderRadius: 4,
+                  }}>
                     <MdChevronLeft size={20} />
                     <span style={{ fontSize: 14 }}>Trước</span>
                   </div>
                 </th>
 
-                {DAYS.map((day) => (
-                  <th
-                    key={day.key}
-                    style={{
-                      border: "1px solid #40a9ff",
-                      padding: 12,
-                      minWidth: 140,
-                    }}
-                  >
+                {DAYS.map(day => (
+                  <th key={day.key} style={{
+                    border: "1px solid #40a9ff",
+                    padding: 12,
+                    minWidth: 140,
+                  }}>
                     {day.label}
                   </th>
                 ))}
 
-                <th
-                  style={{
-                    border: "1px solid #40a9ff",
-                    padding: 8,
-                    width: 100,
-                    position: "sticky",
-                    right: 0,
-                    background: "#1890ff",
-                    zIndex: 10,
-                  }}
-                >
-                  <div
-                    onClick={handleNextWeek}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      cursor: "pointer",
-                      padding: 4,
-                      borderRadius: 4,
-                    }}
-                  >
+                <th style={{
+                  border: "1px solid #40a9ff",
+                  padding: 8,
+                  width: 100,
+                  position: "sticky",
+                  right: 0,
+                  background: "#1890ff",
+                  zIndex: 10,
+                }}>
+                  <div onClick={handleNextWeek} style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    cursor: "pointer",
+                    padding: 4,
+                    borderRadius: 4,
+                  }}>
                     <span style={{ fontSize: 14 }}>Sau</span>
                     <MdChevronRight size={20} />
                   </div>
@@ -362,71 +320,64 @@ export default function TimeTable() {
             </thead>
 
             <tbody>
-              {PERIODS.map((period) => (
+              {PERIODS.map(period => (
                 <tr key={period}>
-                  {/* Cột tiết */}
-                  <td
-                    style={{
-                      border: "1px solid #d9d9d9",
-                      padding: 8,
-                      textAlign: "center",
-                      fontWeight: 500,
-                      background: "#1890ff",
-                      color: "white",
-                      position: "sticky",
-                      left: 0,
-                      zIndex: 10,
-                    }}
-                  >
+                  {/* Cột tiết trái */}
+                  <td style={{
+                    border: "1px solid #d9d9d9",
+                    padding: 8,
+                    textAlign: "center",
+                    fontWeight: 500,
+                    background: "#1890ff",
+                    color: "white",
+                    position: "sticky",
+                    left: 0,
+                    zIndex: 9,
+                  }}>
                     Tiết {period}
                   </td>
 
-                  {/* Các cột thứ */}
-                  {DAYS.map((day) => {
+                  {/* Các ngày */}
+                  {DAYS.map(day => {
                     const cellKey = `${day.key}-${period}`;
-                    if (renderedCells.has(cellKey)) return null;
+                    if (mergedCells.has(cellKey)) return null;
 
-                    const course = getCourseForCell(day.key, period);
-                    const isFirstPeriod =
-                      course && course.time_period[0] === period;
-                    const rowSpan = isFirstPeriod
-                      ? course.time_period.length
-                      : 1;
+                    const cellData = getCourseForCell(day.key, period);
+                    const isFirstPeriod = cellData?.isFirst;
 
                     return (
                       <td
                         key={cellKey}
-                        rowSpan={rowSpan}
+                        rowSpan={isFirstPeriod ? cellData.time_period.length : 1}
                         style={{
                           border: "1px solid #d9d9d9",
-                          minHeight: 60 * 4,
                           verticalAlign: "top",
+                          minHeight: 80,
                         }}
                       >
-                        {course && isFirstPeriod && (
-                          <div
-                            style={{
-                              background: "#e6f7ff",
-                              margin: 4,
-                              padding: 6,
-                              borderRadius: 6,
-                              height: "100%",
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontWeight: 600,
-                                color: "#003a8c",
-                                marginBottom: 4,
-                              }}
-                            >
-                              {course.subject.name}
+                        {isFirstPeriod && (
+                          <div style={{
+                            background: "#e6f7ff",
+                            margin: 4,
+                            padding: 8,
+                            borderRadius: 6,
+                            height: "150px",
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "flex-start",
+                          }}>
+                            <div style={{
+                              fontWeight: 600,
+                              color: "#003a8c",
+                              marginBottom: 6,
+                              fontSize: 14,
+                            }}>
+                              {cellData.subject.name}
                             </div>
-                            <div style={{ color: "#595959" }}>
-                              <div>Mã: {course.subject.code}</div>
-                              {/* <div>GV: {course.teacher.name}</div> */}
-                              <div>Phòng: {course.room}</div>
-                              <div>Lớp: {course.class_st}</div>
+                            <div style={{ color: "#595959", fontSize: 12, lineHeight: 1.4 }}>
+                              <div><strong>Mã:</strong> {cellData.subject.code}</div>
+                              <div><strong>Phòng:</strong> {cellData.room}</div>
+                              <div><strong>Lớp:</strong> {cellData.class_st}</div>
                             </div>
                           </div>
                         )}
@@ -434,20 +385,18 @@ export default function TimeTable() {
                     );
                   })}
 
-                  {/* Cột tiết bên phải */}
-                  <td
-                    style={{
-                      border: "1px solid #d9d9d9",
-                      padding: 8,
-                      textAlign: "center",
-                      fontWeight: 500,
-                      background: "#1890ff",
-                      color: "white",
-                      position: "sticky",
-                      right: 0,
-                      zIndex: 10,
-                    }}
-                  >
+                  {/* Cột tiết phải */}
+                  <td style={{
+                    border: "1px solid #d9d9d9",
+                    padding: 8,
+                    textAlign: "center",
+                    fontWeight: 500,
+                    background: "#1890ff",
+                    color: "white",
+                    position: "sticky",
+                    right: 0,
+                    zIndex: 9,
+                  }}>
                     Tiết {period}
                   </td>
                 </tr>
@@ -456,6 +405,14 @@ export default function TimeTable() {
           </table>
         </div>
       </div>
+
+      {/* Debug (xóa khi ổn định) */}
+      {/* {process.env.NODE_ENV === "development" && (
+        <details style={{ marginTop: 20, padding: 10, background: "#f5f5f5" }}>
+          <summary>Debug Info (Dev only)</summary>
+          <pre>{JSON.stringify({ filteredCourses, selectedWeekData }, null, 2)}</pre>
+        </details>
+      )} */}
     </div>
   );
 }

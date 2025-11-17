@@ -80,14 +80,6 @@ export default function Profile() {
         is_active: true,
       },
     };
-
-    // const res = await dispatch(editTeacherAction(id, payload));
-    //   if (res.success) {
-    //     messageApi.success("Cập nhật teacher thành công!");
-    //     setTimeout(() => navigate("/teachers"), 1000);
-    //   } else {
-    //     messageApi.error("Thao tác thất bại!");
-    //   }
   };
 
   return (
@@ -225,7 +217,7 @@ export default function Profile() {
                   <Button type='primary' htmlType='submit' size='large'>
                     Save
                   </Button>
-                  <Button size='large' onClick={() => navigate("/")}>
+                  <Button size='large' onClick={() => navigate("/time-table-semester")}>
                     Cancel
                   </Button>
                 </Space>

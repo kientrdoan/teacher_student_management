@@ -9,8 +9,12 @@ export class ScoreService extends BaseService {
     return this.get(`/teachers/scores/${course_id}`);
   };
 
-  updateScoreStudent = (course_id, user_id, payload) => {
-    return this.put(`/teachers/scores/${course_id}/${user_id}`, payload);
+  updateScoreStudent = (dang_ky_id, payload) => {
+    return this.put(`/teachers/scores/${dang_ky_id}/`, payload);
+  };
+
+  updateScoreExcelStudent = (dang_ky_id, payload) => {
+    return this.post(`/teachers/scores/${dang_ky_id}/`, payload);
   };
 }
 

@@ -25,10 +25,10 @@ export const getAllScoreStudentAction = (course_id) => {
   };
 };
 
-export const updateScoreStudentAction = (course_id, user_id, payload) => {
+export const updateScoreStudentAction = (dang_ky_id, payload) => {
   return async (dispatch) => {
     try {
-      const result = await scoreService.updateScoreStudent(course_id, user_id, payload)
+      const result = await scoreService.updateScoreStudent(dang_ky_id, payload)
       if (result.status === 200) {
         return { success: true, data: result.data.data };
       }
@@ -38,4 +38,20 @@ export const updateScoreStudentAction = (course_id, user_id, payload) => {
     }
   };
 };
+
+
+export const updateScoreExelStudentAction = (dang_ky_id, payload) => {
+  return async (dispatch) => {
+    try {
+      const result = await scoreService.updateScoreExcelStudent(dang_ky_id, payload)
+      if (result.status === 200) {
+        return { success: true, data: result.data.data };
+      }
+    } catch (error) {
+      console.log("error", error);
+      return { success: false, error };
+    }
+  };
+};
+
 

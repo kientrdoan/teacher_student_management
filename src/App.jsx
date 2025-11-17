@@ -60,10 +60,13 @@ function App() {
       <Routes>
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<HomeTemplate />}>
-            <Route index element={<Home />} />
+            {/* <Route index element={<Home />} /> */}
+
+            <Route index path="time-table-semester" element={<TimeTableSemester />} />
+
             <Route path="profile" element={<Profile />} />
             <Route path="time-table" element={<TimeTable />} />
-            <Route path="time-table-semester" element={<TimeTableSemester />} />
+            
             <Route path="courses" element={<Course />} />
             <Route path="/courses/students/:id" element={<Student></Student>} />
             <Route path="score-management" element={<ScoreManagement />} />
