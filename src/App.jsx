@@ -60,9 +60,9 @@ function App() {
       <Routes>
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<HomeTemplate />}>
-            {/* <Route index element={<Home />} /> */}
+            <Route index element={<TimeTableSemester />} />
 
-            <Route index path="time-table-semester" element={<TimeTableSemester />} />
+            <Route path="time-table-semester" element={<TimeTableSemester />} />
 
             <Route path="profile" element={<Profile />} />
             <Route path="time-table" element={<TimeTable />} />

@@ -8,20 +8,27 @@ import {
   InputNumber,
   message,
   Space,
+  Card,
+  Row,
+  Col,
+  Tag,
 } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAllScoreStudentAction,
-  updateScoreExelStudentAction,
   updateScoreStudentAction,
 } from "../redux/actions/TermScoureAction";
 import { useParams } from "react-router-dom";
 import * as XLSX from "xlsx";
+import { getAllCourseByCourseId } from "../redux/actions/CourseAction";
 
 export default function Score() {
   const dispatch = useDispatch();
   const scores_students = useSelector(
     (state) => state.TermScoreReducer.scores_students
+  );
+  const courseDetail = useSelector(
+    (state) => state.CourseReducer.course_detail // Giả sử bạn lưu detail course ở đây
   );
 
   const [editingRecord, setEditingRecord] = useState(null);
@@ -32,10 +39,10 @@ export default function Score() {
   useEffect(() => {
     if (id) {
       dispatch(getAllScoreStudentAction(id));
+      dispatch(getAllCourseByCourseId(id));
     }
   }, [id, dispatch]);
 
-  // ======= HANDLE EDIT =========
   const handleEdit = (record) => {
     setEditingRecord(record);
     form.setFieldsValue({
@@ -61,11 +68,9 @@ export default function Score() {
     }
   };
 
-  // ======= IMPORT EXCEL =========
   const handleImportExcel = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     try {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
@@ -80,9 +85,6 @@ export default function Score() {
         final_score: Number(row.final_score) || 0,
       }));
 
-      console.log("Dữ liệu import:", formattedData);
-
-      // Cập nhật điểm từng sinh viên
       for (const item of formattedData) {
         const existing = scores_students.find(
           (s) => s.student.student_code === item.student_code
@@ -101,14 +103,12 @@ export default function Score() {
     }
   };
 
-  // ======= DOWNLOAD TEMPLATE =========
   const handleDownloadTemplate = () => {
     if (!scores_students || scores_students.length === 0) {
       message.warning("Không có dữ liệu sinh viên để tải!");
       return;
     }
 
-    // Chuẩn bị dữ liệu từ danh sách hiện có
     const header = [
       "student_code",
       "full_name",
@@ -134,7 +134,6 @@ export default function Score() {
     XLSX.writeFile(workbook, "diem_sinh_vien.xlsx");
   };
 
-  // ======= TABLE COLUMNS =========
   const columns = [
     {
       title: "Mã SV",
@@ -146,11 +145,6 @@ export default function Score() {
       key: "full_name",
       render: (_, record) =>
         `${record.student.last_name} ${record.student.first_name}`,
-    },
-    {
-      title: "Môn học",
-      dataIndex: ["subject", "name"],
-      key: "subject_name",
     },
     {
       title: "Chuyên cần",
@@ -185,7 +179,44 @@ export default function Score() {
 
   return (
     <div style={{ padding: 24 }}>
-      <h2>Quản lý điểm sinh viên</h2>
+      <h2 className="mb-4 text-2xl font-bold">Quản lý điểm sinh viên</h2>
+
+      {courseDetail && (
+        <Card className="mb-6 shadow-sm">
+          <Row gutter={16}>
+            <Col span={8}>
+              <Tag color="blue" className="text-lg">
+                Lớp: {courseDetail.class_st?.name}
+              </Tag>
+            </Col>
+            <Col span={8}>
+              <Tag color="green" className="text-lg">
+                Môn: {courseDetail.subject?.name} ({courseDetail.subject?.code})
+              </Tag>
+            </Col>
+            <Col span={8}>
+              <Tag color="purple" className="text-lg">
+                Phòng: {courseDetail.room?.code} - {courseDetail.room?.building}
+              </Tag>
+            </Col>
+            <Col span={8} className="mt-2">
+              <Tag color="orange" className="text-lg">
+                Học kỳ: {courseDetail.semester?.semester} ({courseDetail.semester?.year})
+              </Tag>
+            </Col>
+            <Col span={8} className="mt-2">
+              <Tag color="cyan" className="text-lg">
+                Thứ: {courseDetail.weekday}, Tiết bắt đầu: {courseDetail.start_period}
+              </Tag>
+            </Col>
+            <Col span={8} className="mt-2">
+              <Tag color="red" className="text-lg">
+                Thời gian: {courseDetail.start_date} → {courseDetail.end_date}
+              </Tag>
+            </Col>
+          </Row>
+        </Card>
+      )}
 
       <Space style={{ marginBottom: 16 }}>
         <input
@@ -194,6 +225,7 @@ export default function Score() {
           onChange={handleImportExcel}
           style={{ marginRight: 8 }}
         />
+        
         <Button onClick={handleDownloadTemplate}>
           Tải file mẫu có dữ liệu
         </Button>

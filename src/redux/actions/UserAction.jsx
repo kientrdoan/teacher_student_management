@@ -13,16 +13,20 @@ export const loginAction = (thongTinDangNhap) => {
         const accessToken = result.data.data.access;
         const payload = jwtDecode(accessToken);
         console.log("Payload JWT:", payload);
-        dispatch({
-          type: LOGIN_ACTION,
-          access_token: result.data.data.access,
-          user: {
-            user_id: payload.user_id,
-            full_name: payload.name,
-            role: payload.role
-          }
-        });
-        return { success: true, data: result.data.data };
+        if(payload.role === 'TEACHER'){
+            dispatch({
+            type: LOGIN_ACTION,
+            access_token: result.data.data.access,
+            user: {
+              user_id: payload.user_id,
+              name: payload.name,
+              role: payload.role
+            }
+          });
+          return { success: true, data: result.data.data };
+        }else{
+          return { success: false, error: "Đăng nhập thất bại" };
+        }
       }
     } catch (error) {
       console.log("error", error);
