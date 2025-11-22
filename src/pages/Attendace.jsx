@@ -57,6 +57,7 @@ export default function Attendance() {
     formData.append("student_id", studentId);
     formData.append("course_id", course_id);
     formData.append("time_slot_id", lessonId);
+    formData.append("threshold", 0.95)
     formData.append("image", file);
 
     const res = await dispatch(AttendAction(formData));
