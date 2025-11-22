@@ -26,12 +26,15 @@ export const AttendAction = (payload) => {
   return async (dispatch) => {
     try {
       const result = await attendService.attend(payload);
-      if (result.status === 200) {
+      if (result.status === 200 && result.data.status_code != 405) {
         // dispatch({
         //   type: GET_ALL_ATTEND_BY_COURSE,
         //   attends: result.data.data,
         // });
         return { success: true, data: result.data.data };
+      }
+      else{
+        return { success: false, error: result.data.message};
       }
     } catch (error) {
       console.log("error", error);

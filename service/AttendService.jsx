@@ -10,7 +10,7 @@ export class AttendService extends BaseService {
   };
 
   attend = (payload) => {
-    return this.post_token(`/teachers/attends`, payload);
+    return this.post_token(`/admins/attendance/`, payload);
   };
 
 }

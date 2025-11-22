@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { Table } from "antd";
+import { message, Table } from "antd";
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 
 import { getAllCourseByCourseId } from "../redux/actions/CourseAction";
-import { AttendAction, getAttendByCourseId } from "../redux/actions/AttendAction";
+import {
+  AttendAction,
+  getAttendByCourseId,
+} from "../redux/actions/AttendAction";
 import { getAllStudentAction } from "../redux/actions/StudentAction";
 import { getAllLessonAction } from "../redux/actions/LessonAction";
 
 export default function Attendance() {
   const { id: course_id } = useParams();
   const dispatch = useDispatch();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const students = useSelector((state) => state.StudentReducer.students);
   const reduxAttends = useSelector((state) => state.AttendReducer.attends);
@@ -36,7 +40,8 @@ export default function Attendance() {
   }, [reduxAttends]);
 
   // Convert lessons → list date string
-  const lessonDates = lessons?.map((l) => dayjs(l.date).format("DD/MM/YYYY")) || [];
+  const lessonDates =
+    lessons?.map((l) => dayjs(l.date).format("DD/MM/YYYY")) || [];
 
   // Map date → lessonId
   const lessonMap =
@@ -47,52 +52,55 @@ export default function Attendance() {
     }, {}) || {};
 
   // Handle điểm danh
-  const handleAttend = async (studentId, lessonId, status) => {
-    const payload = {
-      student_id: studentId,
-      course_id: course_id,
-      time_slot_id: lessonId,
-      status: status,
-    };
+  const handleAttend = async (studentId, lessonId, file) => {
+    const formData = new FormData();
+    formData.append("student_id", studentId);
+    formData.append("course_id", course_id);
+    formData.append("time_slot_id", lessonId);
+    formData.append("image", file);
 
-    // Dispatch action
-    const res = await dispatch(AttendAction(payload));
-    console.log("res", res)
-    if (res.success){
+    const res = await dispatch(AttendAction(formData));
+    console.log("res", res);
+    // console.log(res)
+
+    if (res.success) {
       dispatch(getAttendByCourseId(course_id));
     }
-
+    else{
+      messageApi.error("Dữ liệu không hợp lệ")
+    }
   };
 
   // Build table data
-  const data = students?.map((s) => {
-    const fullName = s.user ? `${s.user.last_name} ${s.user.first_name}` : "";
-    const studentId = s.student_id || s.id;
+  const data =
+    students?.map((s) => {
+      const fullName = s.user ? `${s.user.last_name} ${s.user.first_name}` : "";
+      const studentId = s.student_id || s.id;
 
-    const record = {
-      id: studentId,
-      studentId,
-      name: fullName,
-    };
+      const record = {
+        id: studentId,
+        studentId,
+        name: fullName,
+      };
 
-    lessonDates.forEach((date) => {
-      const lessonDay = dayjs(date, "DD/MM/YYYY");
-      const today = dayjs();
+      lessonDates.forEach((date) => {
+        const lessonDay = dayjs(date, "DD/MM/YYYY");
+        const today = dayjs();
 
-      if (lessonDay.isAfter(today, "day")) {
-        record[date] = "-";
-      } else {
-        const att = attends.find((a) => a.id === studentId);
-        console.log("att", attends)
-        const attendForDate = att?.attends?.find(
-          (item) => dayjs(item.time_slot__date).format("DD/MM/YYYY") === date
-        );
-        record[date] = attendForDate ? attendForDate.status : false;
-      }
-    });
+        if (lessonDay.isAfter(today, "day")) {
+          record[date] = "-";
+        } else {
+          const att = attends.find((a) => a.id === studentId);
+          console.log("att", attends);
+          const attendForDate = att?.attends?.find(
+            (item) => dayjs(item.time_slot__date).format("DD/MM/YYYY") === date
+          );
+          record[date] = attendForDate ? attendForDate.status : 'Absent';
+        }
+      });
 
-    return record;
-  }) || [];
+      return record;
+    }) || [];
 
   // Columns
   const columns = [
@@ -119,23 +127,44 @@ export default function Attendance() {
         const today = dayjs().format("DD/MM/YYYY");
 
         // Hôm nay + chưa điểm danh → hiện nút
-        if (date === today && (status === false || status === "-")) {
+        if (date === today && (status === null || status === "-")) {
           return (
-            <button
-              className="px-2 py-1 bg-blue-500 text-white rounded"
-              onClick={() => handleAttend(record.studentId, lessonMap[date], true)}
-            >
-              Điểm danh
-            </button>
+            <>
+              <input
+                type='file'
+                accept='image/*'
+                id={`upload-${record.studentId}-${date}`}
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    handleAttend(record.studentId, lessonMap[date], file);
+                  }
+                }}
+              />
+
+              <button
+                className='px-2 py-1 bg-blue-500 text-white rounded'
+                onClick={() =>
+                  document
+                    .getElementById(`upload-${record.studentId}-${date}`)
+                    .click()
+                }
+              >
+                Điểm danh
+              </button>
+            </>
           );
         }
 
         if (status === "-") return "-";
 
-        return status ? (
-          <CheckCircleOutlined 
+        return status === 'Present' ? (
+          <CheckCircleOutlined
             style={{ color: "green", fontSize: 16 }}
-            onClick={() => handleAttend(record.studentId, lessonMap[date], false)}
+            onClick={() =>
+              handleAttend(record.studentId, lessonMap[date], false)
+            }
           />
         ) : (
           <CloseCircleOutlined style={{ color: "red", fontSize: 16 }} />
@@ -145,11 +174,12 @@ export default function Attendance() {
   ];
 
   return (
-    <div className="p-4">
+    <div className='p-4'>
+      {contextHolder}
       <Table
         dataSource={data}
         columns={columns}
-        rowKey="id"
+        rowKey='id'
         bordered
         scroll={{ x: "max-content" }}
       />
