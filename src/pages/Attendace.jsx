@@ -95,7 +95,7 @@ export default function Attendance() {
           const attendForDate = att?.attends?.find(
             (item) => dayjs(item.time_slot__date).format("DD/MM/YYYY") === date
           );
-          record[date] = attendForDate ? attendForDate.status : 'Absent';
+          record[date] = attendForDate ? attendForDate.status : null;
         }
       });
 
