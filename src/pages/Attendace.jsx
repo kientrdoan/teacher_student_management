@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { message, Table } from "antd";
+import { Card, Col, message, Row, Table, Tag } from "antd";
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,6 +21,9 @@ export default function Attendance() {
   const students = useSelector((state) => state.StudentReducer.students);
   const reduxAttends = useSelector((state) => state.AttendReducer.attends);
   const lessons = useSelector((state) => state.LessonReducer.lessons);
+  const course_detail = useSelector(
+    (state) => state.CourseReducer.course_detail
+  );
 
   // Local state để quản lý attend tạm thời
   const [attends, setAttends] = useState([]);
@@ -52,12 +55,10 @@ export default function Attendance() {
     }, {}) || {};
 
   // Handle điểm danh
-  const handleAttend = async (studentId, lessonId, file) => {
+  const handleAttend = async (lessonId, file) => {
     const formData = new FormData();
-    formData.append("student_id", studentId);
-    formData.append("course_id", course_id);
     formData.append("time_slot_id", lessonId);
-    formData.append("threshold", 0.95)
+    formData.append("threshold", 0.95);
     formData.append("image", file);
 
     const res = await dispatch(AttendAction(formData));
@@ -66,9 +67,8 @@ export default function Attendance() {
 
     if (res.success) {
       dispatch(getAttendByCourseId(course_id));
-    }
-    else{
-      messageApi.error("Dữ liệu không hợp lệ")
+    } else {
+      messageApi.error("Dữ liệu không hợp lệ");
     }
   };
 
@@ -139,7 +139,7 @@ export default function Attendance() {
                 onChange={(e) => {
                   const file = e.target.files[0];
                   if (file) {
-                    handleAttend(record.studentId, lessonMap[date], file);
+                    handleAttend(lessonMap[date], file);
                   }
                 }}
               />
@@ -160,11 +160,11 @@ export default function Attendance() {
 
         if (status === "-") return "-";
 
-        return status === 'Present' ? (
+        return status === "Present" ? (
           <CheckCircleOutlined
             style={{ color: "green", fontSize: 16 }}
             onClick={() =>
-              handleAttend(record.studentId, lessonMap[date], false)
+              handleAttend(lessonMap[date], false)
             }
           />
         ) : (
@@ -177,7 +177,88 @@ export default function Attendance() {
   return (
     <div className='p-4'>
       {contextHolder}
+      <div className='mb-4'>
+        <h2 className='mb-4 text-2xl font-bold'>Quản lý điểm danh</h2>
+      </div>
+      {course_detail && (
+        <Card className='mb-6 shadow-sm w-[50%]'>
+          <Row className='mb-2'>
+            <Tag color='blue' className='text-lg'>
+              Lớp: {course_detail.class_st?.name}
+            </Tag>
+
+            <Tag color='green' className='text-lg'>
+              Môn: {course_detail.subject?.name} ({course_detail.subject?.code})
+            </Tag>
+          </Row>
+
+          <Row className='mb-2'>
+            <Tag color='purple' className='text-lg'>
+              Phòng: {course_detail.room?.code} - {course_detail.room?.building}
+            </Tag>
+
+            <Tag color='orange' className='text-lg'>
+              Học kỳ: {course_detail.semester?.semester} (
+              {course_detail.semester?.year})
+            </Tag>
+
+            <Tag color='cyan' className='text-lg'>
+              Thứ: {course_detail.weekday}, Tiết bắt đầu:{" "}
+              {course_detail.start_period}
+            </Tag>
+          </Row>
+
+          <Tag color='red' className='text-lg'>
+            Thời gian: {course_detail.start_date} → {course_detail.end_date}
+          </Tag>
+        </Card>
+      )}
+
+      {/* <input
+        type='file'
+        accept='image/*'
+        style={{ display: "none" }}
+        // onChange={(e) => {
+        //   const file = e.target.files[0];
+        //   if (file) {
+        //     handleAttend(record.studentId, lessonMap[date], file);
+        //   }
+        // }}
+      /> */}
+      <div className='mb-4'>
+        <input
+          type='file'
+          accept='image/*'
+          id='upload-attendance-today'
+          style={{ display: "none" }}
+          onChange={(e) => {
+            const file = e.target.files[0];
+            if (file) {
+              const today = dayjs().format("DD/MM/YYYY");
+              const lessonId = lessonMap[today];
+
+              if (!lessonId) {
+                messageApi.error("Hôm nay không có buổi học!");
+                return;
+              }
+
+              handleAttend(lessonId, file);
+            }
+          }}
+        />
+
+        <button
+          className='px-4 py-2 bg-blue-600 text-white rounded mt-4'
+          onClick={() =>
+            document.getElementById("upload-attendance-today").click()
+          }
+        >
+          Điểm danh hôm nay
+        </button>
+      </div>
+
       <Table
+        className='mt-4'
         dataSource={data}
         columns={columns}
         rowKey='id'

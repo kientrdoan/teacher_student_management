@@ -3,6 +3,7 @@ import { FiUser } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { TOKEN } from "../../utils/Config";
 import { useSelector } from "react-redux";
+import logo from '../assets/logo.png'
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -31,7 +32,8 @@ export default function Header() {
   return (
     <header className="flex items-center justify-between bg-white px-6 h-16 flex-shrink-0 shadow-sm border-b border-gray-200">
       <div className="flex items-center">
-        <h2 className="text-lg font-semibold text-gray-800">Dashboard</h2>
+        {/* <h2 className="text-lg font-semibold text-gray-800">Dashboard</h2> */}
+        <img src={logo} alt="logo" style={{height: "60px", width: "80px", borderRadius: "5%"}} />
       </div>
 
       <div className="relative" ref={dropdownRef}>

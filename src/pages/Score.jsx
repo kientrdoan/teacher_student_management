@@ -27,8 +27,8 @@ export default function Score() {
   const scores_students = useSelector(
     (state) => state.TermScoreReducer.scores_students
   );
-  const courseDetail = useSelector(
-    (state) => state.CourseReducer.course_detail // Giả sử bạn lưu detail course ở đây
+  const course_detail = useSelector(
+    (state) => state.CourseReducer.course_detail
   );
 
   const [editingRecord, setEditingRecord] = useState(null);
@@ -181,37 +181,37 @@ export default function Score() {
     <div style={{ padding: 24 }}>
       <h2 className="mb-4 text-2xl font-bold">Quản lý điểm sinh viên</h2>
 
-      {courseDetail && (
+      {course_detail && (
         <Card className="mb-6 shadow-sm">
           <Row gutter={16}>
             <Col span={8}>
               <Tag color="blue" className="text-lg">
-                Lớp: {courseDetail.class_st?.name}
+                Lớp: {course_detail.class_st?.name}
               </Tag>
             </Col>
             <Col span={8}>
               <Tag color="green" className="text-lg">
-                Môn: {courseDetail.subject?.name} ({courseDetail.subject?.code})
+                Môn: {course_detail.subject?.name} ({course_detail.subject?.code})
               </Tag>
             </Col>
             <Col span={8}>
               <Tag color="purple" className="text-lg">
-                Phòng: {courseDetail.room?.code} - {courseDetail.room?.building}
+                Phòng: {course_detail.room?.code} - {course_detail.room?.building}
               </Tag>
             </Col>
             <Col span={8} className="mt-2">
               <Tag color="orange" className="text-lg">
-                Học kỳ: {courseDetail.semester?.semester} ({courseDetail.semester?.year})
+                Học kỳ: {course_detail.semester?.semester} ({course_detail.semester?.year})
               </Tag>
             </Col>
             <Col span={8} className="mt-2">
               <Tag color="cyan" className="text-lg">
-                Thứ: {courseDetail.weekday}, Tiết bắt đầu: {courseDetail.start_period}
+                Thứ: {course_detail.weekday}, Tiết bắt đầu: {course_detail.start_period}
               </Tag>
             </Col>
             <Col span={8} className="mt-2">
               <Tag color="red" className="text-lg">
-                Thời gian: {courseDetail.start_date} → {courseDetail.end_date}
+                Thời gian: {course_detail.start_date} → {course_detail.end_date}
               </Tag>
             </Col>
           </Row>
