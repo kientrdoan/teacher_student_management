@@ -22,7 +22,7 @@ export default function SlideBar() {
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-4">
+      <nav className="flex-1 overflow-y-auto p-4 w-full">
         <ul className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon

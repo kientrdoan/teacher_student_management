@@ -12,6 +12,7 @@ import { useParams } from "react-router-dom";
 import { getAllCourseByCourseId } from "../redux/actions/CourseAction";
 import {
   AttendAction,
+  AttendManualAction,
   getAttendByCourseId,
 } from "../redux/actions/AttendAction";
 import { getAllStudentAction } from "../redux/actions/StudentAction";
@@ -76,6 +77,23 @@ export default function Attendance() {
     }
   };
 
+  const handleManualAttend = async (studentId, lessonId, status) => {
+    const payload = {
+      student_id: studentId,
+      course_id: course_id,
+      time_slot_id: lessonId,
+      status: status,
+    };
+
+    // Dispatch action
+    const res = await dispatch(AttendManualAction(payload));
+    if (res.success) {
+      dispatch(getAttendByCourseId(course_id));
+    } else {
+      messageApi.error("Dữ liệu không hợp lệ");
+    }
+  };
+
   const data =
     students?.map((s) => {
       const fullName = s.user ? `${s.user.last_name} ${s.user.first_name}` : "";
@@ -124,28 +142,13 @@ export default function Attendance() {
       render: (status, record) => {
         const today = dayjs().format("DD/MM/YYYY");
 
-        if (date === today && (status === null || status === "-")) {
+        if (date === today && (status === null || status === "Absent")) {
           return (
             <>
-              <input
-                type='file'
-                accept='image/*'
-                id={`upload-${record.studentId}-${date}`}
-                style={{ display: "none" }}
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    handleAttend(lessonMap[date], file);
-                  }
-                }}
-              />
-
               <button
                 className='px-2 py-1 bg-blue-500 text-white rounded'
                 onClick={() =>
-                  document
-                    .getElementById(`upload-${record.studentId}-${date}`)
-                    .click()
+                  handleManualAttend(record.studentId, lessonMap[date], "Present")
                 }
               >
                 Điểm danh
@@ -159,7 +162,7 @@ export default function Attendance() {
         return status === "Present" ? (
           <CheckCircleOutlined
             style={{ color: "green", fontSize: 16 }}
-            onClick={() => handleAttend(lessonMap[date], false)}
+            onClick={() =>  handleManualAttend(record.studentId, lessonMap[date], 'Absent')}
           />
         ) : (
           <CloseCircleOutlined style={{ color: "red", fontSize: 16 }} />

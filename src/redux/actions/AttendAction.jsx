@@ -42,3 +42,25 @@ export const AttendAction = (payload) => {
     }
   };
 };
+
+
+export const AttendManualAction = (payload) => {
+  return async (dispatch) => {
+    try {
+      const result = await attendService.attendManual(payload);
+      if (result.status === 200 && result.data.status_code != 405) {
+        // dispatch({
+        //   type: GET_ALL_ATTEND_BY_COURSE,
+        //   attends: result.data.data,
+        // });
+        return { success: true, data: result.data.data };
+      }
+      else{
+        return { success: false, error: result.data.message};
+      }
+    } catch (error) {
+      console.log("error", error);
+      return { success: false, error };
+    }
+  };
+};
