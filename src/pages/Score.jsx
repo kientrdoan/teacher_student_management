@@ -12,6 +12,7 @@ import {
   Row,
   Col,
   Tag,
+  Upload,
 } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -21,6 +22,7 @@ import {
 import { useParams } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { getAllCourseByCourseId } from "../redux/actions/CourseAction";
+import { UploadCloudIcon, UploadIcon } from "lucide-react";
 
 export default function Score() {
   const dispatch = useDispatch();
@@ -170,7 +172,7 @@ export default function Score() {
       title: "Hành động",
       key: "action",
       render: (_, record) => (
-        <Button type="link" onClick={() => handleEdit(record)}>
+        <Button type='link' onClick={() => handleEdit(record)}>
           Chỉnh sửa
         </Button>
       ),
@@ -179,103 +181,100 @@ export default function Score() {
 
   return (
     <div style={{ padding: 24 }}>
-      <h2 className="mb-4 text-2xl font-bold">Quản lý điểm sinh viên</h2>
+      <h2 className='mb-4 text-2xl font-bold'>Quản lý điểm sinh viên</h2>
 
       {course_detail && (
-        <Card className="mb-6 shadow-sm">
-          <Row gutter={16}>
-            <Col span={8}>
-              <Tag color="blue" className="text-lg">
-                Lớp: {course_detail.class_st?.name}
-              </Tag>
-            </Col>
-            <Col span={8}>
-              <Tag color="green" className="text-lg">
-                Môn: {course_detail.subject?.name} ({course_detail.subject?.code})
-              </Tag>
-            </Col>
-            <Col span={8}>
-              <Tag color="purple" className="text-lg">
-                Phòng: {course_detail.room?.code} - {course_detail.room?.building}
-              </Tag>
-            </Col>
-            <Col span={8} className="mt-2">
-              <Tag color="orange" className="text-lg">
-                Học kỳ: {course_detail.semester?.semester} ({course_detail.semester?.year})
-              </Tag>
-            </Col>
-            <Col span={8} className="mt-2">
-              <Tag color="cyan" className="text-lg">
-                Thứ: {course_detail.weekday}, Tiết bắt đầu: {course_detail.start_period}
-              </Tag>
-            </Col>
-            <Col span={8} className="mt-2">
-              <Tag color="red" className="text-lg">
-                Thời gian: {course_detail.start_date} → {course_detail.end_date}
-              </Tag>
-            </Col>
+        <Card className='mb-6 shadow-sm w-[50%]'>
+          <Row className='mb-2'>
+            <Tag color='blue' className='text-lg'>
+              Lớp: {course_detail.class_st?.name}
+            </Tag>
+            <Tag color='green' className='text-lg'>
+              Môn: {course_detail.subject?.name} ({course_detail.subject?.code})
+            </Tag>
           </Row>
+          <Row className='mb-2'>
+            <Tag color='purple' className='text-lg'>
+              Phòng: {course_detail.room?.code} - {course_detail.room?.building}
+            </Tag>
+            <Tag color='orange' className='text-lg'>
+              Học kỳ: {course_detail.semester?.semester} (
+              {course_detail.semester?.year})
+            </Tag>
+            <Tag color='cyan' className='text-lg'>
+              Thứ: {course_detail.weekday}, Tiết bắt đầu:{" "}
+              {course_detail.start_period}
+            </Tag>
+          </Row>
+          <Tag color='red' className='text-lg'>
+            Thời gian: {course_detail.start_date} → {course_detail.end_date}
+          </Tag>
         </Card>
       )}
 
-      <Space style={{ marginBottom: 16 }}>
-        <input
-          type="file"
-          accept=".xlsx, .xls"
-          onChange={handleImportExcel}
-          style={{ marginRight: 8 }}
-        />
-        
-        <Button onClick={handleDownloadTemplate}>
-          Tải file mẫu có dữ liệu
+      <Space className='mb-4 mt-4' style={{ marginBottom: 16 }}>
+        <Upload
+          accept='.xlsx,.xls'
+          showUploadList={false}
+          beforeUpload={(file) => {
+            handleImportExcel({ target: { files: [file] } });
+            return false;
+          }}
+        >
+        <Button type='primary' icon={<UploadIcon />}>
+            Nhập điểm
+          </Button>
+        </Upload>
+
+        <Button onClick={handleDownloadTemplate} type='primary'>
+          Tải danh sách sin sinh
         </Button>
       </Space>
-
       <Table
         dataSource={scores_students}
         columns={columns}
-        rowKey="id"
+        rowKey='id'
         pagination={false}
       />
 
       <Modal
-        title={`Chỉnh sửa điểm - ${
-          editingRecord?.student?.student_code || ""
-        }`}
+        title={`Chỉnh sửa điểm - ${editingRecord?.student?.student_code || ""}`}
         open={isModalVisible}
         onOk={handleSave}
         onCancel={() => setIsModalVisible(false)}
-        okText="Lưu"
-        cancelText="Hủy"
+        okText='Lưu'
+        cancelText='Hủy'
       >
-        <Form form={form} layout="vertical">
+        <Form form={form} layout='vertical'>
           <Form.Item
-            label="Điểm chuyên cần"
-            name="attendance_score"
-            rules={[{ required: true, message: "Vui lòng nhập điểm chuyên cần" }]}
+            label='Điểm chuyên cần'
+            name='attendance_score'
+            rules={[
+              { required: true, message: "Vui lòng nhập điểm chuyên cần" },
+            ]}
           >
             <InputNumber min={0} max={10} style={{ width: "100%" }} />
           </Form.Item>
 
           <Form.Item
-            label="Điểm bài tập"
-            name="exercise_score"
+            label='Điểm bài tập'
+            name='exercise_score'
             rules={[{ required: true, message: "Vui lòng nhập điểm bài tập" }]}
           >
             <InputNumber min={0} max={10} style={{ width: "100%" }} />
           </Form.Item>
 
           <Form.Item
-            label="Điểm giữa kỳ"
-            name="mid_score"
+            label='Điểm giữa kỳ'
+            name='mid_score'
             rules={[{ required: true, message: "Vui lòng nhập điểm giữa kỳ" }]}
           >
             <InputNumber min={0} max={10} style={{ width: "100%" }} />
           </Form.Item>
 
           <Form.Item
-            label="Điểm cuối kỳ"
-            name="final_score"
+            label='Điểm cuối kỳ'
+            name='final_score'
             rules={[{ required: true, message: "Vui lòng nhập điểm cuối kỳ" }]}
           >
             <InputNumber min={0} max={10} style={{ width: "100%" }} />

@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Card, Col, message, Row, Table, Tag } from "antd";
-import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { Card, Row, Table, Tag, message, Upload, Button } from "antd";
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -25,7 +29,6 @@ export default function Attendance() {
     (state) => state.CourseReducer.course_detail
   );
 
-  // Local state để quản lý attend tạm thời
   const [attends, setAttends] = useState([]);
 
   useEffect(() => {
@@ -37,16 +40,13 @@ export default function Attendance() {
     }
   }, [course_id, dispatch]);
 
-  // Sync Redux attend → local state
   useEffect(() => {
     setAttends(reduxAttends || []);
   }, [reduxAttends]);
 
-  // Convert lessons → list date string
   const lessonDates =
     lessons?.map((l) => dayjs(l.date).format("DD/MM/YYYY")) || [];
 
-  // Map date → lessonId
   const lessonMap =
     lessons?.reduce((acc, l) => {
       const formatted = dayjs(l.date).format("DD/MM/YYYY");
@@ -54,7 +54,6 @@ export default function Attendance() {
       return acc;
     }, {}) || {};
 
-  // Handle điểm danh
   const handleAttend = async (lessonId, file) => {
     const formData = new FormData();
     formData.append("time_slot_id", lessonId);
@@ -62,27 +61,21 @@ export default function Attendance() {
     formData.append("image", file);
 
     const res = await dispatch(AttendAction(formData));
-    console.log("res", res);
-    // console.log(res)
 
     if (res.success) {
       dispatch(getAttendByCourseId(course_id));
+      messageApi.success("Điểm danh thành công");
     } else {
       messageApi.error("Dữ liệu không hợp lệ");
     }
   };
 
-  // Build table data
   const data =
     students?.map((s) => {
       const fullName = s.user ? `${s.user.last_name} ${s.user.first_name}` : "";
       const studentId = s.student_id || s.id;
 
-      const record = {
-        id: studentId,
-        studentId,
-        name: fullName,
-      };
+      const record = { id: studentId, studentId, name: fullName };
 
       lessonDates.forEach((date) => {
         const lessonDay = dayjs(date, "DD/MM/YYYY");
@@ -92,7 +85,6 @@ export default function Attendance() {
           record[date] = "-";
         } else {
           const att = attends.find((a) => a.id === studentId);
-          console.log("att", attends);
           const attendForDate = att?.attends?.find(
             (item) => dayjs(item.time_slot__date).format("DD/MM/YYYY") === date
           );
@@ -103,7 +95,6 @@ export default function Attendance() {
       return record;
     }) || [];
 
-  // Columns
   const columns = [
     {
       title: "Student ID",
@@ -127,9 +118,8 @@ export default function Attendance() {
       render: (status, record) => {
         const today = dayjs().format("DD/MM/YYYY");
 
-        // Hôm nay + chưa điểm danh → hiện nút
         if (date === today && (status === null || status === "-")) {
-          return (
+            return (
             <>
               <input
                 type='file'
@@ -160,7 +150,7 @@ export default function Attendance() {
 
         if (status === "-") return "-";
 
-        return status === "Present" ? (
+     return status === "Present" ? (
           <CheckCircleOutlined
             style={{ color: "green", fontSize: 16 }}
             onClick={() =>
@@ -186,75 +176,50 @@ export default function Attendance() {
             <Tag color='blue' className='text-lg'>
               Lớp: {course_detail.class_st?.name}
             </Tag>
-
             <Tag color='green' className='text-lg'>
               Môn: {course_detail.subject?.name} ({course_detail.subject?.code})
             </Tag>
           </Row>
-
           <Row className='mb-2'>
             <Tag color='purple' className='text-lg'>
               Phòng: {course_detail.room?.code} - {course_detail.room?.building}
             </Tag>
-
             <Tag color='orange' className='text-lg'>
               Học kỳ: {course_detail.semester?.semester} (
               {course_detail.semester?.year})
             </Tag>
-
             <Tag color='cyan' className='text-lg'>
               Thứ: {course_detail.weekday}, Tiết bắt đầu:{" "}
               {course_detail.start_period}
             </Tag>
           </Row>
-
           <Tag color='red' className='text-lg'>
             Thời gian: {course_detail.start_date} → {course_detail.end_date}
           </Tag>
         </Card>
       )}
 
-      {/* <input
-        type='file'
-        accept='image/*'
-        style={{ display: "none" }}
-        // onChange={(e) => {
-        //   const file = e.target.files[0];
-        //   if (file) {
-        //     handleAttend(record.studentId, lessonMap[date], file);
-        //   }
-        // }}
-      /> */}
-      <div className='mb-4'>
-        <input
-          type='file'
+      <div className='mb-4 mt-4'>
+        <Upload
           accept='image/*'
-          id='upload-attendance-today'
-          style={{ display: "none" }}
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file) {
-              const today = dayjs().format("DD/MM/YYYY");
-              const lessonId = lessonMap[today];
+          showUploadList={false}
+          beforeUpload={(file) => {
+            const today = dayjs().format("DD/MM/YYYY");
+            const lessonId = lessonMap[today];
 
-              if (!lessonId) {
-                messageApi.error("Hôm nay không có buổi học!");
-                return;
-              }
-
-              handleAttend(lessonId, file);
+            if (!lessonId) {
+              messageApi.error("Hôm nay không có buổi học!");
+              return Upload.LIST_IGNORE;
             }
-          }}
-        />
 
-        <button
-          className='px-4 py-2 bg-blue-600 text-white rounded mt-4'
-          onClick={() =>
-            document.getElementById("upload-attendance-today").click()
-          }
+            handleAttend(lessonId, file);
+            return Upload.LIST_IGNORE; // ngăn hiển thị file
+          }}
         >
-          Điểm danh hôm nay
-        </button>
+          <Button type='primary'>
+            Điểm danh: {dayjs().format("DD/MM/YYYY")}
+          </Button>
+        </Upload>
       </div>
 
       <Table
