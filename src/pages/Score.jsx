@@ -227,7 +227,7 @@ export default function Score() {
         </Upload>
 
         <Button onClick={handleDownloadTemplate} type='primary'>
-          Tải danh sách sin sinh
+          Tải danh sách sinh viên
         </Button>
       </Space>
       <Table

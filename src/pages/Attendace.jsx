@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Row, Table, Tag, message, Upload, Button } from "antd";
+import { Card, Row, Table, Tag, message, Upload, Button, Modal } from "antd";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -21,6 +21,9 @@ export default function Attendance() {
   const { id: course_id } = useParams();
   const dispatch = useDispatch();
   const [messageApi, contextHolder] = message.useMessage();
+
+  const [openModal, setOpenModal] = useState(false);
+  const [imageBase64, setImageBase64] = useState("");
 
   const students = useSelector((state) => state.StudentReducer.students);
   const reduxAttends = useSelector((state) => state.AttendReducer.attends);
@@ -63,6 +66,9 @@ export default function Attendance() {
     const res = await dispatch(AttendAction(formData));
 
     if (res.success) {
+      console.log(res.data);
+      setImageBase64(res.data.visualized_image); // gán ảnh
+      setOpenModal(true);
       dispatch(getAttendByCourseId(course_id));
       messageApi.success("Điểm danh thành công");
     } else {
@@ -119,7 +125,7 @@ export default function Attendance() {
         const today = dayjs().format("DD/MM/YYYY");
 
         if (date === today && (status === null || status === "-")) {
-            return (
+          return (
             <>
               <input
                 type='file'
@@ -150,12 +156,10 @@ export default function Attendance() {
 
         if (status === "-") return "-";
 
-     return status === "Present" ? (
+        return status === "Present" ? (
           <CheckCircleOutlined
             style={{ color: "green", fontSize: 16 }}
-            onClick={() =>
-              handleAttend(lessonMap[date], false)
-            }
+            onClick={() => handleAttend(lessonMap[date], false)}
           />
         ) : (
           <CloseCircleOutlined style={{ color: "red", fontSize: 16 }} />
@@ -230,6 +234,27 @@ export default function Attendance() {
         bordered
         scroll={{ x: "max-content" }}
       />
+
+      <Modal
+        open={openModal}
+        onCancel={() => setOpenModal(false)}
+        footer={null}
+        centered
+      >
+        <img
+          src={
+            imageBase64.startsWith("data:")
+              ? imageBase64
+              : `data:image/jpeg;base64,${imageBase64}`
+          }
+          alt='attendance'
+          style={{
+            width: "100%",
+            borderRadius: 10,
+            objectFit: "contain",
+          }}
+        />
+      </Modal>
     </div>
   );
 }
