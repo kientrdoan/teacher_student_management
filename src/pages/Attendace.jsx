@@ -17,6 +17,7 @@ import {
 } from "../redux/actions/AttendAction";
 import { getAllStudentAction } from "../redux/actions/StudentAction";
 import { getAllLessonAction } from "../redux/actions/LessonAction";
+import { AiOutlineCheck, AiTwotoneEye } from "react-icons/ai";
 
 export default function Attendance() {
   const { id: course_id } = useParams();
@@ -113,6 +114,9 @@ export default function Attendance() {
             (item) => dayjs(item.time_slot__date).format("DD/MM/YYYY") === date
           );
           record[date] = attendForDate ? attendForDate.status : null;
+          record["url_checkin"] = attendForDate
+            ? attendForDate.url_checkin
+            : null;
         }
       });
 
@@ -142,16 +146,46 @@ export default function Attendance() {
       render: (status, record) => {
         const today = dayjs().format("DD/MM/YYYY");
 
-        if (date === today && (status === null || status === "Absent")) {
+        if (date === today && status === null) {
           return (
             <>
               <button
                 className='px-2 py-1 bg-blue-500 text-white rounded'
                 onClick={() =>
-                  handleManualAttend(record.studentId, lessonMap[date], "Present")
+                  handleManualAttend(
+                    record.studentId,
+                    lessonMap[date],
+                    "Present"
+                  )
                 }
               >
                 Điểm danh
+              </button>
+            </>
+          );
+        } else if (date === today && status === "Pending") {
+          return (
+            <>
+              <button
+                className='bg-blue-500 text-white rounded'
+                onClick={() => {
+                  console.log("record", record, record.url_checkin);
+                  setImageBase64(record.url_checkin);
+                  setOpenModal(true);
+                }}
+              >
+                <AiTwotoneEye></AiTwotoneEye>
+              </button>
+
+              <button
+                className='bg-blue-500 text-white rounded'
+                onClick={() => {
+                  console.log("record", record, record.url_checkin);
+                  // setImageBase64(record.url_checkin);
+                  // setOpenModal(true);
+                }}
+              >
+                <AiOutlineCheck />
               </button>
             </>
           );
@@ -162,7 +196,9 @@ export default function Attendance() {
         return status === "Present" ? (
           <CheckCircleOutlined
             style={{ color: "green", fontSize: 16 }}
-            onClick={() =>  handleManualAttend(record.studentId, lessonMap[date], 'Absent')}
+            onClick={() =>
+              handleManualAttend(record.studentId, lessonMap[date], "Absent")
+            }
           />
         ) : (
           <CloseCircleOutlined style={{ color: "red", fontSize: 16 }} />
@@ -206,7 +242,7 @@ export default function Attendance() {
         </Card>
       )}
 
-      <div className='mb-4 mt-4'>
+      {/* <div className='mb-4 mt-4'>
         <Upload
           accept='image/*'
           showUploadList={false}
@@ -227,7 +263,7 @@ export default function Attendance() {
             Điểm danh: {dayjs().format("DD/MM/YYYY")}
           </Button>
         </Upload>
-      </div>
+      </div> */}
 
       <Table
         className='mt-4'
@@ -246,9 +282,9 @@ export default function Attendance() {
       >
         <img
           src={
-            imageBase64.startsWith("data:")
+            imageBase64.startsWith("http:")
               ? imageBase64
-              : `data:image/jpeg;base64,${imageBase64}`
+              : `http://localhost:8000/media/${imageBase64}`
           }
           alt='attendance'
           style={{
