@@ -40,12 +40,14 @@ export const updateScoreStudentAction = (dang_ky_id, payload) => {
 };
 
 
-export const updateScoreExelStudentAction = (dang_ky_id, payload) => {
+export const updateScoreExelStudentAction = (course_id, payload) => {
   return async (dispatch) => {
     try {
-      const result = await scoreService.updateScoreExcelStudent(dang_ky_id, payload)
+      const result = await scoreService.updateScoreExcelStudent(course_id, payload)
       if (result.status === 200) {
         return { success: true, data: result.data.data };
+      }else{
+        return { success: false, error: result.data.data };
       }
     } catch (error) {
       console.log("error", error);

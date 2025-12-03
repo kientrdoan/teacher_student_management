@@ -6,15 +6,15 @@ export class ScoreService extends BaseService {
   }
 
   getAllScoreStudent = (course_id) => {
-    return this.get(`/teachers/scores/${course_id}`);
+    return this.get_token(`/teachers/scores/${course_id}`);
   };
 
   updateScoreStudent = (dang_ky_id, payload) => {
-    return this.put(`/teachers/scores/${dang_ky_id}/`, payload);
+    return this.put(`/teachers/score/${dang_ky_id}`, payload);
   };
 
-  updateScoreExcelStudent = (dang_ky_id, payload) => {
-    return this.post(`/teachers/scores/${dang_ky_id}/`, payload);
+  updateScoreExcelStudent = (course_id, payload) => {
+    return this.post_token(`/teachers/scores/${course_id}`, payload);
   };
 }
 

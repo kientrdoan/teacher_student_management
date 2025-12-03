@@ -10,19 +10,20 @@ import {
   Space,
   Card,
   Row,
-  Col,
   Tag,
   Upload,
+  Spin,
 } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAllScoreStudentAction,
+  updateScoreExelStudentAction,
   updateScoreStudentAction,
 } from "../redux/actions/TermScoureAction";
 import { useParams } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { getAllCourseByCourseId } from "../redux/actions/CourseAction";
-import { UploadCloudIcon, UploadIcon } from "lucide-react";
+import { UploadIcon } from "lucide-react";
 
 export default function Score() {
   const dispatch = useDispatch();
@@ -33,18 +34,34 @@ export default function Score() {
     (state) => state.CourseReducer.course_detail
   );
 
+  const [messageApi, contextHolder] = message.useMessage();
+
   const [editingRecord, setEditingRecord] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const { id } = useParams();
 
+  const [loading, setLoading] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+
+  // ------------------ LOAD DATA ------------------
   useEffect(() => {
     if (id) {
-      dispatch(getAllScoreStudentAction(id));
-      dispatch(getAllCourseByCourseId(id));
+      loadData();
     }
   }, [id, dispatch]);
 
+  const loadData = async () => {
+    setLoading(true);
+    await Promise.all([
+      dispatch(getAllScoreStudentAction(id)),
+      dispatch(getAllCourseByCourseId(id)),
+    ]);
+    setLoading(false);
+  };
+
+  // ------------------ EDIT POINT ------------------
   const handleEdit = (record) => {
     setEditingRecord(record);
     form.setFieldsValue({
@@ -59,55 +76,52 @@ export default function Score() {
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
+      setSaveLoading(true);
       await dispatch(updateScoreStudentAction(editingRecord.id, values));
-      message.success("Cập nhật điểm thành công!");
+      messageApi.success("Cập nhật điểm thành công!");
       setIsModalVisible(false);
       setEditingRecord(null);
-      dispatch(getAllScoreStudentAction(id));
+      await loadData();
     } catch (error) {
       console.error(error);
-      message.error("Không thể lưu điểm!");
+      messageApi.error("Không thể lưu điểm!");
+    } finally {
+      setSaveLoading(false);
     }
   };
 
-  const handleImportExcel = async (e) => {
-    const file = e.target.files[0];
+  // ------------------ IMPORT EXCEL ------------------
+  const handleImportExcel = async (file) => {
     if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    // const register_id = scores_students.length > 0 ? scores_students[0].dang_ky_id : null;
+    // console.log("register_id", scores_students, register_id);
+
     try {
-      const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data);
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(worksheet);
-
-      const formattedData = rows.map((row) => ({
-        student_code: String(row.student_code).trim(),
-        attendance_score: Number(row.attendance_score) || 0,
-        exercise_score: Number(row.exercise_score) || 0,
-        mid_score: Number(row.mid_score) || 0,
-        final_score: Number(row.final_score) || 0,
-      }));
-
-      for (const item of formattedData) {
-        const existing = scores_students.find(
-          (s) => s.student.student_code === item.student_code
-        );
-        if (existing) {
-          await dispatch(updateScoreStudentAction(existing.id, item));
-        }
+      setImportLoading(true);
+      // Gọi API hiện tại, BE sẽ xử lý toàn bộ file
+      const res = await dispatch(updateScoreExelStudentAction(id, formData));
+      console.log("res", res);
+      if (res.success) {
+        messageApi.success("Nhập điểm thành công!");
+      } else {
+        messageApi.error(res.error.response.data.data || "Nhập điểm thất bại!");
       }
-
-      message.success("Import và cập nhật điểm thành công!");
-      dispatch(getAllScoreStudentAction(id));
-      e.target.value = null;
+      await loadData();
     } catch (err) {
       console.error(err);
-      message.error("Lỗi khi đọc file Excel!");
+      messageApi.error("Lỗi khi import file Excel!");
+    } finally {
+      setImportLoading(false);
     }
   };
 
+  // ------------------ DOWNLOAD TEMPLATE ------------------
   const handleDownloadTemplate = () => {
     if (!scores_students || scores_students.length === 0) {
-      message.warning("Không có dữ liệu sinh viên để tải!");
+      messageApi.warning("Không có dữ liệu sinh viên để tải!");
       return;
     }
 
@@ -132,10 +146,10 @@ export default function Score() {
     const worksheet = XLSX.utils.aoa_to_sheet([header, ...data]);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Scores");
-
     XLSX.writeFile(workbook, "diem_sinh_vien.xlsx");
   };
 
+  // ------------------ TABLE COLUMNS ------------------
   const columns = [
     {
       title: "Mã SV",
@@ -181,8 +195,10 @@ export default function Score() {
 
   return (
     <div style={{ padding: 24 }}>
+      {contextHolder}
       <h2 className='mb-4 text-2xl font-bold'>Quản lý điểm sinh viên</h2>
 
+      {/* ================== COURSE INFO ================== */}
       {course_detail && (
         <Card className='mb-6 shadow-sm w-[50%]'>
           <Row className='mb-2'>
@@ -212,17 +228,16 @@ export default function Score() {
         </Card>
       )}
 
-      <Space className='mb-4 mt-4' style={{ marginBottom: 16 }}>
+      {/* ================== ACTION BUTTONS ================== */}
+      <Space className='mb-4 mt-4'>
         <Upload
           accept='.xlsx,.xls'
           showUploadList={false}
-          beforeUpload={(file) => {
-            handleImportExcel({ target: { files: [file] } });
-            return false;
-          }}
+          beforeUpload={() => false}
+          onChange={(info) => handleImportExcel(info.file)}
         >
-        <Button type='primary' icon={<UploadIcon />}>
-            Nhập điểm
+          <Button type='primary' icon={<UploadIcon />} loading={importLoading}>
+            {importLoading ? "Đang import..." : "Nhập điểm"}
           </Button>
         </Upload>
 
@@ -230,17 +245,23 @@ export default function Score() {
           Tải danh sách sinh viên
         </Button>
       </Space>
-      <Table
-        dataSource={scores_students}
-        columns={columns}
-        rowKey='id'
-        pagination={false}
-      />
 
+      {/* ================== TABLE WITH LOADING ================== */}
+      <Spin spinning={loading} tip="Đang tải dữ liệu...">
+        <Table
+          dataSource={scores_students}
+          columns={columns}
+          rowKey='id'
+          pagination={false}
+        />
+      </Spin>
+
+      {/* ================== MODAL EDIT ================== */}
       <Modal
         title={`Chỉnh sửa điểm - ${editingRecord?.student?.student_code || ""}`}
         open={isModalVisible}
         onOk={handleSave}
+        confirmLoading={saveLoading}
         onCancel={() => setIsModalVisible(false)}
         okText='Lưu'
         cancelText='Hủy'
@@ -275,7 +296,9 @@ export default function Score() {
           <Form.Item
             label='Điểm cuối kỳ'
             name='final_score'
-            rules={[{ required: true, message: "Vui lòng nhập điểm cuối kỳ" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập điểm cuối kỳ" },
+            ]}
           >
             <InputNumber min={0} max={10} style={{ width: "100%" }} />
           </Form.Item>

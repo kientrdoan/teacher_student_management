@@ -59,24 +59,24 @@ export default function Attendance() {
       return acc;
     }, {}) || {};
 
-  const handleAttend = async (lessonId, file) => {
-    const formData = new FormData();
-    formData.append("time_slot_id", lessonId);
-    formData.append("threshold", 0.95);
-    formData.append("image", file);
+  // const handleAttend = async (lessonId, file) => {
+  //   const formData = new FormData();
+  //   formData.append("time_slot_id", lessonId);
+  //   formData.append("threshold", 0.95);
+  //   formData.append("image", file);
 
-    const res = await dispatch(AttendAction(formData));
+  //   const res = await dispatch(AttendAction(formData));
 
-    if (res.success) {
-      console.log(res.data);
-      setImageBase64(res.data.visualized_image); // gán ảnh
-      setOpenModal(true);
-      dispatch(getAttendByCourseId(course_id));
-      messageApi.success("Điểm danh thành công");
-    } else {
-      messageApi.error("Dữ liệu không hợp lệ");
-    }
-  };
+  //   if (res.success) {
+  //     console.log(res.data);
+  //     setImageBase64(res.data.visualized_image); // gán ảnh
+  //     setOpenModal(true);
+  //     dispatch(getAttendByCourseId(course_id));
+  //     messageApi.success("Điểm danh thành công");
+  //   } else {
+  //     messageApi.error("Dữ liệu không hợp lệ");
+  //   }
+  // };
 
   const handleManualAttend = async (studentId, lessonId, status) => {
     const payload = {
