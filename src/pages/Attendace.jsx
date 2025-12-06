@@ -59,24 +59,24 @@ export default function Attendance() {
       return acc;
     }, {}) || {};
 
-  // const handleAttend = async (lessonId, file) => {
-  //   const formData = new FormData();
-  //   formData.append("time_slot_id", lessonId);
-  //   formData.append("threshold", 0.95);
-  //   formData.append("image", file);
+  const handleAttend = async (lessonId, file) => {
+    const formData = new FormData();
+    formData.append("time_slot_id", lessonId);
+    formData.append("threshold", 0.95);
+    formData.append("image", file);
 
-  //   const res = await dispatch(AttendAction(formData));
+    const res = await dispatch(AttendAction(formData));
 
-  //   if (res.success) {
-  //     console.log(res.data);
-  //     setImageBase64(res.data.visualized_image); // gán ảnh
-  //     setOpenModal(true);
-  //     dispatch(getAttendByCourseId(course_id));
-  //     messageApi.success("Điểm danh thành công");
-  //   } else {
-  //     messageApi.error("Dữ liệu không hợp lệ");
-  //   }
-  // };
+    if (res.success) {
+      console.log(res.data);
+      // setImageBase64(res.data.visualized_image);
+      // setOpenModal(true);
+      dispatch(getAttendByCourseId(course_id));
+      messageApi.success("Điểm danh thành công");
+    } else {
+      messageApi.error("Dữ liệu không hợp lệ");
+    }
+  };
 
   const handleManualAttend = async (studentId, lessonId, status) => {
     const payload = {
@@ -167,7 +167,7 @@ export default function Attendance() {
           return (
             <>
               <button
-                className='bg-blue-500 text-white rounded'
+                className='bg-blue-500 text-white rounded h-[20px]'
                 onClick={() => {
                   console.log("record", record, record.url_checkin);
                   setImageBase64(record.url_checkin);
@@ -178,14 +178,52 @@ export default function Attendance() {
               </button>
 
               <button
-                className='bg-blue-500 text-white rounded'
-                onClick={() => {
-                  console.log("record", record, record.url_checkin);
-                  // setImageBase64(record.url_checkin);
-                  // setOpenModal(true);
+                className='bg-blue-500 text-white rounded h-[20px] ml-2'
+                onClick={async () => {
+                  const res = await fetch(
+                    `http://localhost:8000/media/${record.url_checkin}`
+                  );
+                  const blob = await res.blob();
+
+                  const file = new File([blob], "attendance.jpg", {
+                    type: blob.type,
+                  });
+
+                  console.log("file", file);
+
+                  handleAttend(lessonMap[date], file);
                 }}
               >
                 <AiOutlineCheck />
+              </button>
+            </>
+          );
+        }else if (date === today && status === "Absent") {
+          return (
+            <>
+              <button
+                className='bg-blue-500 text-white rounded h-[20px]'
+                onClick={() => {
+                  console.log("record", record, record.url_checkin);
+                  setImageBase64(record.url_checkin);
+                  setOpenModal(true);
+                }}
+              >
+                <AiTwotoneEye></AiTwotoneEye>
+              </button>
+
+             <button
+                style={{position: "absolute"}}
+                className='bg-blue-500 text-white rounded ml-2'
+                onClick={() =>
+                  handleManualAttend(
+                    record.studentId,
+                    lessonMap[date],
+                    "Present"
+                  )
+                }
+              >
+                Điểm danh
               </button>
             </>
           );

@@ -37,6 +37,8 @@ export default function Profile() {
         const fullAvatarUrl = profileData.user?.url
           ? `http://localhost:8000${profileData.user.url}`
           : null;
+
+        console.log(fullAvatarUrl)
         setAvatar(fullAvatarUrl);
 
         form.setFieldsValue({
