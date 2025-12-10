@@ -17,6 +17,10 @@ export class AttendService extends BaseService {
     return this.post_token(`/teachers/attends`, payload);
   };
 
+  attendManualMulti = (payload) => {
+    return this.post_token(`/teachers/multi/attends`, payload);
+  };
+
 }
 
 export const attendService = new AttendService();

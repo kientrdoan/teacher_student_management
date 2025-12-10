@@ -10,7 +10,7 @@ export class SemesterService extends BaseService {
   };
 
   getCurrentSemester = () => {
-    return this.get(`/students/current-semesters/`);
+    return this.get(`/students/current-semesters`);
   };
 
 }

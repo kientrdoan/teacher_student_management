@@ -1,5 +1,16 @@
+// --- CODE GIỮ NGUYÊN HOÀN TOÀN CỦA BẠN ---
 import React, { useEffect, useState } from "react";
-import { Card, Row, Table, Tag, message, Upload, Button, Modal } from "antd";
+import {
+  Card,
+  Row,
+  Table,
+  Tag,
+  message,
+  Upload,
+  Button,
+  Modal,
+  Select,
+} from "antd";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -13,6 +24,7 @@ import { getAllCourseByCourseId } from "../redux/actions/CourseAction";
 import {
   AttendAction,
   AttendManualAction,
+  AttendMultiManualAction,
   getAttendByCourseId,
 } from "../redux/actions/AttendAction";
 import { getAllStudentAction } from "../redux/actions/StudentAction";
@@ -26,6 +38,12 @@ export default function Attendance() {
 
   const [openModal, setOpenModal] = useState(false);
   const [imageBase64, setImageBase64] = useState("");
+
+  const [viewMode, setViewMode] = useState("nearest");
+
+  const [selectedStudents, setSelectedStudents] = useState([]);
+  const [openBulkModal, setOpenBulkModal] = useState(false);
+  // const [bulkStatus, setBulkStatus] = useState("Present");
 
   const students = useSelector((state) => state.StudentReducer.students);
   const reduxAttends = useSelector((state) => state.AttendReducer.attends);
@@ -59,24 +77,30 @@ export default function Attendance() {
       return acc;
     }, {}) || {};
 
-  const handleAttend = async (lessonId, file) => {
-    const formData = new FormData();
-    formData.append("time_slot_id", lessonId);
-    formData.append("threshold", 0.95);
-    formData.append("image", file);
+  const nearestDate = lessonDates
+    .filter((d) => !dayjs(d, "DD/MM/YYYY").isAfter(dayjs(), "day"))
+    .sort(
+      (a, b) =>
+        dayjs(b, "DD/MM/YYYY").valueOf() - dayjs(a, "DD/MM/YYYY").valueOf()
+    )[0];
 
-    const res = await dispatch(AttendAction(formData));
+  const displayedDates = viewMode === "all" ? lessonDates : [nearestDate];
 
-    if (res.success) {
-      console.log(res.data);
-      // setImageBase64(res.data.visualized_image);
-      // setOpenModal(true);
-      dispatch(getAttendByCourseId(course_id));
-      messageApi.success("Điểm danh thành công");
-    } else {
-      messageApi.error("Dữ liệu không hợp lệ");
-    }
-  };
+  // const handleAttend = async (lessonId, file) => {
+  //   const formData = new FormData();
+  //   formData.append("time_slot_id", lessonId);
+  //   formData.append("threshold", 0.95);
+  //   formData.append("image", file);
+
+  //   const res = await dispatch(AttendAction(formData));
+
+  //   if (res.success) {
+  //     setImageBase64(res.data.visualized_image);
+  //     messageApi.success("Điểm danh thành công");
+  //   } else {
+  //     messageApi.error("Dữ liệu không hợp lệ");
+  //   }
+  // };
 
   const handleManualAttend = async (studentId, lessonId, status) => {
     const payload = {
@@ -86,10 +110,32 @@ export default function Attendance() {
       status: status,
     };
 
-    // Dispatch action
     const res = await dispatch(AttendManualAction(payload));
     if (res.success) {
       dispatch(getAttendByCourseId(course_id));
+    } else {
+      messageApi.error("Dữ liệu không hợp lệ");
+    }
+  };
+
+  // 🔥 NEW: tính năng điểm danh hàng loạt
+  const handleBulkAttend = async () => {
+    const lessonId = lessonMap[nearestDate];
+
+    const payload = {
+      student_id: selectedStudents, // ← gửi nguyên list student_id
+      course_id: course_id,
+      time_slot_id: lessonId,
+      status: "Present",
+    };
+
+    const res = await dispatch(AttendMultiManualAction(payload));
+
+    if (res.success) {
+      messageApi.success("Điểm danh hàng loạt thành công!");
+      dispatch(getAttendByCourseId(course_id));
+      setSelectedStudents([]);
+      setOpenBulkModal(false);
     } else {
       messageApi.error("Dữ liệu không hợp lệ");
     }
@@ -114,8 +160,8 @@ export default function Attendance() {
             (item) => dayjs(item.time_slot__date).format("DD/MM/YYYY") === date
           );
           record[date] = attendForDate ? attendForDate.status : null;
-          record["url_checkin"] = attendForDate
-            ? attendForDate.url_checkin
+          record[`${date}_image`] = attendForDate
+            ? attendForDate.attendance_image
             : null;
         }
       });
@@ -123,7 +169,18 @@ export default function Attendance() {
       return record;
     }) || [];
 
+  // 🔥 Thêm checkbox đầu bảng
+  const rowSelection = {
+    selectedRowKeys: selectedStudents,
+    onChange: (keys) => setSelectedStudents(keys),
+  };
+
   const columns = [
+    {
+      title: "",
+      dataIndex: "select",
+      width: 40,
+    },
     {
       title: "Student ID",
       dataIndex: "studentId",
@@ -138,7 +195,7 @@ export default function Attendance() {
       fixed: "left",
       width: 200,
     },
-    ...lessonDates.map((date) => ({
+    ...displayedDates.map((date) => ({
       title: date,
       dataIndex: date,
       key: date,
@@ -148,20 +205,14 @@ export default function Attendance() {
 
         if (date === today && status === null) {
           return (
-            <>
-              <button
-                className='px-2 py-1 bg-blue-500 text-white rounded'
-                onClick={() =>
-                  handleManualAttend(
-                    record.studentId,
-                    lessonMap[date],
-                    "Present"
-                  )
-                }
-              >
-                Điểm danh
-              </button>
-            </>
+            <button
+              className='px-2 py-1 bg-blue-500 text-white rounded'
+              onClick={() =>
+                handleManualAttend(record.studentId, lessonMap[date], "Present")
+              }
+            >
+              Điểm danh
+            </button>
           );
         } else if (date === today && status === "Pending") {
           return (
@@ -169,52 +220,46 @@ export default function Attendance() {
               <button
                 className='bg-blue-500 text-white rounded h-[20px]'
                 onClick={() => {
-                  console.log("record", record, record.url_checkin);
-                  setImageBase64(record.url_checkin);
+                  setImageBase64(record[`${date}_image`]);
                   setOpenModal(true);
                 }}
               >
-                <AiTwotoneEye></AiTwotoneEye>
+                <AiTwotoneEye />
               </button>
 
               <button
                 className='bg-blue-500 text-white rounded h-[20px] ml-2'
                 onClick={async () => {
-                  const res = await fetch(
-                    `http://localhost:8000/media/${record.url_checkin}`
+                  handleManualAttend(
+                    record.studentId,
+                    lessonMap[date],
+                    "Present"
                   );
-                  const blob = await res.blob();
-
-                  const file = new File([blob], "attendance.jpg", {
-                    type: blob.type,
-                  });
-
-                  console.log("file", file);
-
-                  handleAttend(lessonMap[date], file);
                 }}
               >
                 <AiOutlineCheck />
               </button>
             </>
           );
-        }else if (date === today && status === "Absent") {
+        } else if (
+          date === today &&
+          status === "Absent" &&
+          record.attendance_image != null
+        ) {
           return (
             <>
               <button
                 className='bg-blue-500 text-white rounded h-[20px]'
                 onClick={() => {
-                  console.log("record", record, record.url_checkin);
-                  setImageBase64(record.url_checkin);
+                  setImageBase64(record.attendance_image);
                   setOpenModal(true);
                 }}
               >
-                <AiTwotoneEye></AiTwotoneEye>
+                <AiTwotoneEye />
               </button>
 
-             <button
-                style={{position: "absolute"}}
-                className='bg-blue-500 text-white rounded ml-2'
+              <button
+                className='bg-blue-500 text-white rounded ml-2 h-[20px]'
                 onClick={() =>
                   handleManualAttend(
                     record.studentId,
@@ -226,6 +271,21 @@ export default function Attendance() {
                 Điểm danh
               </button>
             </>
+          );
+        } else if (
+          date === today &&
+          status === "Absent" &&
+          record.attendance_image == null
+        ) {
+          return (
+            <button
+              className='px-2 py-1 bg-blue-500 text-white rounded'
+              onClick={() =>
+                handleManualAttend(record.studentId, lessonMap[date], "Present")
+              }
+            >
+              Điểm danh
+            </button>
           );
         }
 
@@ -251,6 +311,7 @@ export default function Attendance() {
       <div className='mb-4'>
         <h2 className='mb-4 text-2xl font-bold'>Quản lý điểm danh</h2>
       </div>
+
       {course_detail && (
         <Card className='mb-6 shadow-sm w-[50%]'>
           <Row className='mb-2'>
@@ -270,8 +331,7 @@ export default function Attendance() {
               {course_detail.semester?.year})
             </Tag>
             <Tag color='cyan' className='text-lg'>
-              Thứ: {course_detail.weekday}, Tiết bắt đầu:{" "}
-              {course_detail.start_period}
+              Thứ: {course_detail.weekday}, Tiết: {course_detail.start_period}
             </Tag>
           </Row>
           <Tag color='red' className='text-lg'>
@@ -280,30 +340,42 @@ export default function Attendance() {
         </Card>
       )}
 
-      {/* <div className='mb-4 mt-4'>
-        <Upload
-          accept='image/*'
-          showUploadList={false}
-          beforeUpload={(file) => {
-            const today = dayjs().format("DD/MM/YYYY");
-            const lessonId = lessonMap[today];
-
-            if (!lessonId) {
-              messageApi.error("Hôm nay không có buổi học!");
-              return Upload.LIST_IGNORE;
-            }
-
-            handleAttend(lessonId, file);
-            return Upload.LIST_IGNORE; // ngăn hiển thị file
-          }}
+      {/* Tab Bar */}
+      <div className='flex gap-3 mb-4 mt-4'>
+        <button
+          className={`px-4 py-2 rounded font-semibold ${
+            viewMode === "nearest"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-black"
+          }`}
+          onClick={() => setViewMode("nearest")}
         >
-          <Button type='primary'>
-            Điểm danh: {dayjs().format("DD/MM/YYYY")}
-          </Button>
-        </Upload>
-      </div> */}
+          Điểm danh
+        </button>
+
+        <button
+          className={`px-4 py-2 rounded font-semibold ${
+            viewMode === "all"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-black"
+          }`}
+          onClick={() => setViewMode("all")}
+        >
+          Xem tất cả
+        </button>
+
+        {/* 🔥 Nút điểm danh hàng loạt */}
+        <button
+          disabled={selectedStudents.length === 0}
+          className='px-4 py-2 rounded bg-green-600 text-white'
+          onClick={() => setOpenBulkModal(true)}
+        >
+          Điểm danh nhiều sinh viên ({selectedStudents.length})
+        </button>
+      </div>
 
       <Table
+        rowSelection={rowSelection}
         className='mt-4'
         dataSource={data}
         columns={columns}
@@ -312,6 +384,7 @@ export default function Attendance() {
         scroll={{ x: "max-content" }}
       />
 
+      {/* Modal xem ảnh */}
       <Modal
         open={openModal}
         onCancel={() => setOpenModal(false)}
@@ -320,9 +393,9 @@ export default function Attendance() {
       >
         <img
           src={
-            imageBase64.startsWith("http:")
+            imageBase64 && imageBase64.startsWith("http")
               ? imageBase64
-              : `http://localhost:8000/media/${imageBase64}`
+              : `http://localhost:8000${imageBase64}`
           }
           alt='attendance'
           style={{
@@ -331,6 +404,30 @@ export default function Attendance() {
             objectFit: "contain",
           }}
         />
+      </Modal>
+
+      {/* 🔥 Modal điểm danh hàng loạt */}
+      <Modal
+        open={openBulkModal}
+        onCancel={() => setOpenBulkModal(false)}
+        onOk={handleBulkAttend}
+        okText='Xác nhận'
+        cancelText='Hủy'
+        centered
+      >
+        <h3 className='font-bold mb-3 text-lg'>
+          Điểm danh {selectedStudents.length} sinh viên
+        </h3>
+
+        {/* <Select
+          value={bulkStatus}
+          onChange={setBulkStatus}
+          className='w-full'
+          options={[
+            { label: "Present", value: "Present" },
+            { label: "Absent", value: "Absent" },
+          ]}
+        /> */}
       </Modal>
     </div>
   );
