@@ -9,8 +9,8 @@ export class ProfileService extends BaseService {
     return this.get(`/teachers/teachers/${id}`);
   };
 
-  editInfoTeacherByUserId = (id) => {
-    return this.put(`/teachers/teachers/${id}`)
+  editInfoTeacherByUserId = (id, payload) => {
+    return this.put(`/teachers/teachers/${id}`, payload)
   }
 
 }

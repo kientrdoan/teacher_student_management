@@ -17,12 +17,13 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { getDetailTeacherByUserIdAction } from "../redux/actions/ProfileAction";
+import { editInfoTeacherByUserIdAction, getDetailTeacherByUserIdAction } from "../redux/actions/ProfileAction";
 
 export default function Profile() {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const [avatar, setAvatar] = useState(null); // <== avatar
   const [messageApi, contextHolder] = message.useMessage();
   const user = useSelector((state) => state.UserReducer.user);
@@ -77,7 +78,7 @@ export default function Profile() {
       teacher_code: values.teacher_code,
       degree: values.degree,
       title: values.title,
-      department: values.department,
+      department: values.department?.id,
       user: {
         email: values.email,
         first_name: values.first_name,
@@ -95,6 +96,12 @@ export default function Profile() {
       },
     };
     console.log("Submit payload:", payload);
+    const result = await dispatch(editInfoTeacherByUserIdAction(user.user_id, payload))
+    if(result.success){
+      dispatch(getDetailTeacherByUserIdAction(user.user_id))
+      messageApi.success("Cập nhật thông tin thành công")
+    }
+    
   };
 
   return (
