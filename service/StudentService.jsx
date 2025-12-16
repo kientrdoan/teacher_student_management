@@ -6,7 +6,7 @@ export class StudentService extends BaseService {
   }
 
   getAllStudent = (course_id) => {
-    return this.get(`/teachers/students/${course_id}`);
+    return this.get_token(`/teachers/students/${course_id}`);
   };
 
 }

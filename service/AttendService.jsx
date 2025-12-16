@@ -6,7 +6,7 @@ export class AttendService extends BaseService {
   }
 
   getAttendByCourseId = (course_id) => {
-    return this.get(`/teachers/attends/${course_id}`);
+    return this.get_token(`/teachers/attends/${course_id}`);
   };
 
   attend = (payload) => {

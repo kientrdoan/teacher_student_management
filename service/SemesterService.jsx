@@ -6,11 +6,11 @@ export class SemesterService extends BaseService {
   }
 
   getAllSemester = () => {
-    return this.get(`/teachers/semesters`);
+    return this.get_token(`/teachers/semesters`);
   };
 
   getCurrentSemester = () => {
-    return this.get(`/students/current-semesters`);
+    return this.get_token(`/students/current-semesters`);
   };
 
 }

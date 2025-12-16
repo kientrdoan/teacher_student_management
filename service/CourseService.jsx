@@ -6,15 +6,15 @@ export class CourseService extends BaseService {
   }
 
   getAllCourseByTeacher = (teacher_id) => {
-    return this.get(`/teachers/courses/${teacher_id}`);
+    return this.get_token(`/teachers/courses/${teacher_id}`);
   };
 
   getAllCourseByCourseId = (course_id) => {
-    return this.get(`/teachers/courses/${course_id}`);
+    return this.get_token(`/teachers/courses/${course_id}`);
   };
 
   getCourseByTeacherAndSemester = (teacher_id, semester_id) => {
-    return this.get(`/teachers/courses/${teacher_id}/${semester_id}`);
+    return this.get_token(`/teachers/courses/${teacher_id}/${semester_id}`);
   };
 }
 

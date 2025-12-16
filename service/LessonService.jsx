@@ -6,7 +6,7 @@ export class LessonService extends BaseService {
   }
 
   getAllLesson = (course_id) => {
-    return this.get(`/teachers/lessons/${course_id}`);
+    return this.get_token(`/teachers/lessons/${course_id}`);
   };
 }
 

@@ -6,11 +6,11 @@ export class ProfileService extends BaseService {
   }
 
   getInfoTeacherByUserId = (id) => {
-    return this.get(`/teachers/teachers/${id}`);
+    return this.get_token(`/teachers/teachers/${id}`);
   };
 
   editInfoTeacherByUserId = (id, payload) => {
-    return this.put(`/teachers/teachers/${id}`, payload)
+    return this.put_token(`/teachers/teachers/${id}`, payload)
   }
 
 }

@@ -10,7 +10,7 @@ export class ScoreService extends BaseService {
   };
 
   updateScoreStudent = (dang_ky_id, payload) => {
-    return this.put(`/teachers/score/${dang_ky_id}`, payload);
+    return this.put_token(`/teachers/score/${dang_ky_id}`, payload);
   };
 
   updateScoreExcelStudent = (course_id, payload) => {
