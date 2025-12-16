@@ -152,6 +152,13 @@ export default function Score() {
   // ------------------ TABLE COLUMNS ------------------
   const columns = [
     {
+      title: "STT",
+      width: 60,
+      align: "center",
+      fixed: "left",
+      render: (_, __, index) => index + 1,
+    },
+    {
       title: "Mã SV",
       dataIndex: ["student", "student_code"],
       key: "student_code",
@@ -247,7 +254,7 @@ export default function Score() {
       </Space>
 
       {/* ================== TABLE WITH LOADING ================== */}
-      <Spin spinning={loading} tip="Đang tải dữ liệu...">
+      <Spin spinning={loading} tip='Đang tải dữ liệu...'>
         <Table
           dataSource={scores_students}
           columns={columns}
@@ -296,9 +303,7 @@ export default function Score() {
           <Form.Item
             label='Điểm cuối kỳ'
             name='final_score'
-            rules={[
-              { required: true, message: "Vui lòng nhập điểm cuối kỳ" },
-            ]}
+            rules={[{ required: true, message: "Vui lòng nhập điểm cuối kỳ" }]}
           >
             <InputNumber min={0} max={10} style={{ width: "100%" }} />
           </Form.Item>

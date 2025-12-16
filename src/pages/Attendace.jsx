@@ -145,8 +145,16 @@ export default function Attendance() {
     students?.map((s) => {
       const fullName = s.user ? `${s.user.last_name} ${s.user.first_name}` : "";
       const studentId = s.student_id || s.id;
+      const studentCode = s?.student_code;
+      const studentImage = s?.user?.url;
 
-      const record = { id: studentId, studentId, name: fullName };
+      const record = {
+        id: studentId,
+        studentId,
+        studentCode,
+        name: fullName,
+        image: studentImage,
+      };
 
       lessonDates.forEach((date) => {
         const lessonDay = dayjs(date, "DD/MM/YYYY");
@@ -177,26 +185,58 @@ export default function Attendance() {
 
   const columns = [
     {
-      title: "",
-      dataIndex: "select",
-      width: 40,
+      title: "STT",
+      width: 60,
+      align: "center",
+      fixed: "left",
+      render: (_, __, index) => index + 1,
     },
+    // {
+    //   title: "Student ID",
+    //   dataIndex: "studentId",
+    //   key: "studentId",
+    //   fixed: "left",
+    //   width: 140,
+    // },
     {
-      title: "Student ID",
-      dataIndex: "studentId",
-      key: "studentId",
+      title: "Mã sinh viên",
+      dataIndex: "studentCode",
+      key: "studentCode",
       fixed: "left",
       width: 140,
     },
     {
-      title: "Student Name",
+      title: "Tên sinh viên",
       dataIndex: "name",
       key: "name",
       fixed: "left",
       width: 200,
     },
+    {
+      title: "Hình ảnh",
+      dataIndex: "image",
+      key: "image",
+      fixed: "left",
+      width: 120,
+      align: "center",
+      render: (img) =>
+        img ? (
+          <img
+            src={img.startsWith("http") ? img : `http://localhost:8000${img}`}
+            alt='student'
+            style={{
+              width: 50,
+              height: 50,
+              // borderRadius: "50%",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          "-"
+        ),
+    },
     ...displayedDates.map((date) => ({
-      title: date,
+      title: `Trạng thái: ${date}`,
       dataIndex: date,
       key: date,
       width: 130,

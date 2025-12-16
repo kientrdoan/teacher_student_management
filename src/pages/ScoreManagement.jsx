@@ -15,27 +15,38 @@ import {
   BookOutlined,
 } from "@ant-design/icons";
 import { NavLink } from "react-router-dom";
-import {
-  getAllCourseByTeacherAndSemesterAction,
-} from "../redux/actions/CourseAction";
+import { getAllCourseByTeacherAndSemesterAction } from "../redux/actions/CourseAction";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAllSemeterAction,
   getCurrentSemeterAction,
 } from "../redux/actions/SemesterAction";
 
+const weekdayLabels = {
+  Monday: "Thứ 2",
+  Tuesday: "Thứ 3",
+  Wednesday: "Thứ 4",
+  Thursday: "Thứ 5",
+  Friday: "Thứ 6",
+  Saturday: "Thứ 7",
+  Sunday: "Chủ nhật",
+};
+
 export default function ScoreManagement() {
   const user = useSelector((state) => state.UserReducer.user);
   const courses = useSelector((state) => state.CourseReducer.courses);
   const semesters = useSelector((state) => state.SemesterReducer.semesters);
-  const semester_detail = useSelector((state) => state.SemesterReducer.semester_detail);
+  const semester_detail = useSelector(
+    (state) => state.SemesterReducer.semester_detail
+  );
 
   const dispatch = useDispatch();
   const [searchText, setSearchText] = useState("");
   const [selectedSemester, setSelectedSemester] = useState(null);
 
   const [visibleColumns, setVisibleColumns] = useState({
-    id: true,
+    // id: true,
+    stt: true,
     semester: true,
     class_st: true,
     subject: true,
@@ -86,14 +97,25 @@ export default function ScoreManagement() {
 
   const columnMenu = {
     items: [
+      // {
+      //   key: "id",
+      //   label: (
+      //     <Checkbox
+      //       checked={visibleColumns.id}
+      //       onChange={() => toggleColumn("id")}
+      //     >
+      //       ID
+      //     </Checkbox>
+      //   ),
+      // },
       {
-        key: "id",
+        key: "stt",
         label: (
           <Checkbox
-            checked={visibleColumns.id}
-            onChange={() => toggleColumn("id")}
+            checked={visibleColumns.stt}
+            onChange={() => toggleColumn("stt")}
           >
-            ID
+            STT
           </Checkbox>
         ),
       },
@@ -104,7 +126,7 @@ export default function ScoreManagement() {
             checked={visibleColumns.semester}
             onChange={() => toggleColumn("semester")}
           >
-            Semester
+            Học kỳ
           </Checkbox>
         ),
       },
@@ -115,7 +137,7 @@ export default function ScoreManagement() {
             checked={visibleColumns.class_st}
             onChange={() => toggleColumn("class_st")}
           >
-            Class
+            Lớp sinh viên
           </Checkbox>
         ),
       },
@@ -126,7 +148,7 @@ export default function ScoreManagement() {
             checked={visibleColumns.subject}
             onChange={() => toggleColumn("subject")}
           >
-            Subject
+            Môn học
           </Checkbox>
         ),
       },
@@ -137,7 +159,7 @@ export default function ScoreManagement() {
             checked={visibleColumns.credit}
             onChange={() => toggleColumn("credit")}
           >
-            Credit
+            Số tín chỉ
           </Checkbox>
         ),
       },
@@ -148,7 +170,7 @@ export default function ScoreManagement() {
             checked={visibleColumns.room}
             onChange={() => toggleColumn("room")}
           >
-            Room
+            Phòng học
           </Checkbox>
         ),
       },
@@ -159,7 +181,7 @@ export default function ScoreManagement() {
             checked={visibleColumns.start_date}
             onChange={() => toggleColumn("start_date")}
           >
-            Start date
+            Ngày bắt đầu
           </Checkbox>
         ),
       },
@@ -170,7 +192,7 @@ export default function ScoreManagement() {
             checked={visibleColumns.end_date}
             onChange={() => toggleColumn("end_date")}
           >
-            End date
+            Ngày kết thúc
           </Checkbox>
         ),
       },
@@ -181,7 +203,7 @@ export default function ScoreManagement() {
             checked={visibleColumns.weekday}
             onChange={() => toggleColumn("weekday")}
           >
-            Weekday
+            Thứ
           </Checkbox>
         ),
       },
@@ -189,12 +211,20 @@ export default function ScoreManagement() {
   };
 
   const allColumns = [
+    // {
+    //   title: "ID",
+    //   dataIndex: "id",
+    //   key: "id",
+    //   visible: visibleColumns.id,
+    //   width: 80,
+    // },
     {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      visible: visibleColumns.id,
-      width: 80,
+      title: "STT",
+      width: 60,
+      align: "center",
+      fixed: "left",
+      visible: visibleColumns.stt,
+      render: (_, __, index) => index + 1,
     },
     {
       title: "Class",
@@ -265,10 +295,14 @@ export default function ScoreManagement() {
       visible: visibleColumns.end_date,
     },
     {
-      title: "Weekday",
+      title: "Thứ",
       dataIndex: "weekday",
       key: "weekday",
       visible: visibleColumns.weekday,
+      render: (weekday) => {
+        const key = weekday;
+        return weekdayLabels[key] || "N/A";
+      },
     },
   ];
 
@@ -286,9 +320,7 @@ export default function ScoreManagement() {
               <h1 className='text-2xl font-bold text-gray-900'>
                 Score Management
               </h1>
-              <p className='text-sm text-gray-500'>
-                Manage and view score
-              </p>
+              <p className='text-sm text-gray-500'>Manage and view score</p>
             </div>
           </div>
         </div>
