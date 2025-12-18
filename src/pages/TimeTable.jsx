@@ -99,7 +99,7 @@ export default function TimeTable() {
 
     return courses.map((c) => {
       const startPeriod = c.start_period;
-      const periodCount = c.period_count || 4; // Mặc định 4 tiết nếu API không trả
+      const periodCount = c.period_count || 5; // Mặc định 4 tiết nếu API không trả
 
       const time_period = Array.from(
         { length: periodCount },
@@ -361,7 +361,7 @@ export default function TimeTable() {
                             margin: 4,
                             padding: 8,
                             borderRadius: 6,
-                            height: "150px",
+                            height: "195px",
                             display: "flex",
                             flexDirection: "column",
                             justifyContent: "flex-start",
