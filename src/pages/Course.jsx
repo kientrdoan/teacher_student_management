@@ -201,7 +201,7 @@ export default function ClassSchedule() {
         <div className='flex items-center justify-between mb-6 gap-4 flex-shrink-0'>
           <Space size='middle'>
             <Input
-              placeholder='Search by class or subject...'
+              placeholder='Tìm kiếm...'
               prefix={<SearchOutlined className='text-gray-400' />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}

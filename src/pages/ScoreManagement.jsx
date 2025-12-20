@@ -318,7 +318,7 @@ export default function ScoreManagement() {
             </div>
             <div>
               <h1 className='text-2xl font-bold text-gray-900'>
-                Score Management
+                Quản lý điểm
               </h1>
               <p className='text-sm text-gray-500'>Manage and view score</p>
             </div>
@@ -328,7 +328,7 @@ export default function ScoreManagement() {
         <div className='flex items-center justify-between mb-6 gap-4 flex-shrink-0'>
           <Space size='middle'>
             <Input
-              placeholder='Search by class or subject...'
+              placeholder='Tìm kiếm...'
               prefix={<SearchOutlined className='text-gray-400' />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
