@@ -320,9 +320,9 @@ export default function AttendManage() {
               <h1 className='text-2xl font-bold text-gray-900'>
                 Quản lý điểm danh
               </h1>
-              <p className='text-sm text-gray-500'>
+              {/* <p className='text-sm text-gray-500'>
                 Manage and view attendance
-              </p>
+              </p> */}
             </div>
           </div>
         </div>

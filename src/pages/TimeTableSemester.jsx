@@ -6,6 +6,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { getAllSemeterAction, getCurrentSemeterAction } from "../redux/actions/SemesterAction";
 import { getAllCourseByTeacherAndSemesterAction } from "../redux/actions/CourseAction";
 
+const weekdayLabels = {
+  Monday: "Thứ 2",
+  Tuesday: "Thứ 3",
+  Wednesday: "Thứ 4",
+  Thusday: "Thứ 5",
+  Friday: "Thứ 6",
+  Saturday: "Thứ 7",
+  Sunday: "Chủ nhật",
+};
+
 export default function TimeTableSemester() {
   const [semester, setSemester] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -71,7 +81,15 @@ export default function TimeTableSemester() {
     { title: "Mã MH", dataIndex: "maMH", key: "maMH", align: "center" },
     { title: "Tên môn học", dataIndex: "tenMH", key: "tenMH" },
     { title: "Số tín chỉ", dataIndex: "tinChi", key: "tinChi", align: "center" },
-    { title: "Thứ", dataIndex: "thu", key: "thu", align: "center" },
+    {
+      title: "Thứ",
+      dataIndex: "thu",
+      key: "thu",
+      render: (weekday) => {
+        const key = weekday;
+        return weekdayLabels[key] || "N/A";
+      },
+    },
     { title: "Tiết bắt đầu", dataIndex: "tietBD", key: "tietBD", align: "center" },
     { title: "Phòng học", dataIndex: "phong", key: "phong", align: "center" },
     { title: "Lớp", dataIndex: "lop", key: "lop", align: "center" },

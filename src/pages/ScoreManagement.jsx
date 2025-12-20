@@ -320,7 +320,7 @@ export default function ScoreManagement() {
               <h1 className='text-2xl font-bold text-gray-900'>
                 Quản lý điểm
               </h1>
-              <p className='text-sm text-gray-500'>Manage and view score</p>
+              {/* <p className='text-sm text-gray-500'>Manage and view score</p> */}
             </div>
           </div>
         </div>

@@ -122,58 +122,59 @@ export default function Profile() {
 
               <Form form={form} layout="vertical" onFinish={handleSubmit} style={{ flex: 1 }}>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
-                  Teacher Information
+                  Thông tin
                 </h3>
 
                 <Row gutter={16}>
                   <Col span={8}>
                     <Form.Item
-                      label="Instructor Code"
+                      label="Mã giáo viên"
                       name="teacher_code"
-                      rules={[{ required: true, message: "Please input instructor code!" }]}
+                      rules={[{ required: true, message: "Vui lòng nhập mã giáo viên!" }]}
                     >
-                      <Input placeholder="e.g. T20001" size="large" />
+                      <Input placeholder="e.g. gv001" size="large" readOnly/>
                     </Form.Item>
                   </Col>
                   <Col span={8}>
-                    <Form.Item label="Degree" name="degree">
-                      <Input placeholder="e.g. PhD, Master" size="large" />
+                    <Form.Item label="Trình độ" name="degree">
+                      <Input placeholder="e.g. Thạc sĩ..." size="large"/>
                     </Form.Item>
                   </Col>
                   <Col span={8}>
-                    <Form.Item label="Title" name="title">
-                      <Input placeholder="e.g. Professor" size="large" />
+                    <Form.Item label="Chức vụ" name="title">
+                      <Input placeholder="e.g. Giảng viên" size="large" readOnly/>
                     </Form.Item>
                   </Col>
                 </Row>
 
                 <Form.Item
-                  label="Department"
+                  label="Khoa"
                   name="department"
-                  rules={[{ required: true, message: "Please select department!" }]}
+                  rules={[{ required: true, message: "Vui lòng chọn khoa!" }]}
                 >
-                  <Select placeholder="Select department" size="large">
-                    <Select.Option value="CSE">Computer Science</Select.Option>
-                  </Select>
+                  {/* <Select placeholder="Chọn khoa" size="large" readOnly> */}
+                    {/* <Select.Option value=""></Select.Option> */}
+                  {/* </Select> */}
+                  <Input placeholder="e.g. Công nghệ" size="large" readOnly/>
                 </Form.Item>
 
                 <Row gutter={16}>
                   <Col span={12}>
                     <Form.Item
-                      label="First Name"
+                      label="Tên"
                       name="first_name"
-                      rules={[{ required: true, message: "Please input first name!" }]}
+                      rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
                     >
-                      <Input placeholder="Enter first name" size="large" />
+                      <Input placeholder="Vui lòng nhập tên" size="large" readOnly/>
                     </Form.Item>
                   </Col>
                   <Col span={12}>
                     <Form.Item
-                      label="Last Name"
+                      label="Họ"
                       name="last_name"
-                      rules={[{ required: true, message: "Please input last name!" }]}
+                      rules={[{ required: true, message: "Vui lòng nhập họ!" }]}
                     >
-                      <Input placeholder="Enter last name" size="large" />
+                      <Input placeholder="Vui lòng nhập họ" size="large" readOnly/>
                     </Form.Item>
                   </Col>
                 </Row>
@@ -188,34 +189,34 @@ export default function Profile() {
                         { type: "email", message: "Invalid email!" },
                       ]}
                     >
-                      <Input placeholder="Enter email" size="large" />
+                      <Input placeholder="Enter email" size="large" readOnly/>
                     </Form.Item>
                   </Col>
                   <Col span={12}>
                     <Form.Item
                       label="Phone"
                       name="phone"
-                      rules={[{ required: true, message: "Please input phone!" }]}
+                      rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
                     >
-                      <Input placeholder="Enter phone" size="large" />
+                      <Input placeholder="Nhập số điện thoại" size="large" />
                     </Form.Item>
                   </Col>
                 </Row>
 
                 <Row gutter={16}>
                   <Col span={8}>
-                    <Form.Item label="Identity Number" name="identity_number">
-                      <Input placeholder="ID/Passport" size="large" />
+                    <Form.Item label="Mã định danh" name="identity_number">
+                      <Input placeholder="cccd" size="large" />
                     </Form.Item>
                   </Col>
                   <Col span={8}>
-                    <Form.Item label="Birthday" name="birthday">
+                    <Form.Item label="Ngày sinh" name="birthday">
                       <DatePicker style={{ width: "100%" }} size="large" />
                     </Form.Item>
                   </Col>
                   <Col span={8}>
-                    <Form.Item label="Gender" name="gender">
-                      <Select placeholder="Select gender" size="large">
+                    <Form.Item label="Giới tính" name="gender">
+                      <Select placeholder="Chọn giới tính" size="large">
                         <Select.Option value="Nam">Male</Select.Option>
                         <Select.Option value="Nữ">Female</Select.Option>
                         <Select.Option value="Khác">Other</Select.Option>
@@ -224,8 +225,8 @@ export default function Profile() {
                   </Col>
                 </Row>
 
-                <Form.Item label="Address" name="address">
-                  <Input.TextArea rows={2} placeholder="Enter address" />
+                <Form.Item label="Dịa chỉ" name="address">
+                  <Input.TextArea rows={2} placeholder="Nhập địa chỉ" />
                 </Form.Item>
 
                 <Form.Item className="mb-0">
