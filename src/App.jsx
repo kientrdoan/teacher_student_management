@@ -17,7 +17,7 @@ import ScoreManagement from "./pages/ScoreManagement";
 import TimeTableSemester from "./pages/TimeTableSemester";
 import AttendManage from "./pages/AttendManage";
 import Attendace from "./pages/Attendace";
-import Password from "./pages/password";
+import Password from "./pages/Password";
 
 function App() {
   const dispatch = useDispatch();
