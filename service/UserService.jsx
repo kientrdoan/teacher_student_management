@@ -10,7 +10,7 @@ export class UserService extends BaseService {
   };
 
   thayDoiMatKhau = (payload) => {
-    return this.post_token(`/accounts/change-password`, payload)
+    return this.put_token(`/auths/signup`, payload)
   }
 }
 

@@ -34,3 +34,19 @@ export const loginAction = (thongTinDangNhap) => {
     }
   };
 };
+
+export const changePasswordAction = (payload) => {
+  return async (dispatch) => {
+    try {
+      const result = await userService.thayDoiMatKhau(payload);
+      if (result.status === 200) {
+          return { success: true, data: result.data.data };
+        }else{
+          return { success: false, error: "Đăng nhập thất bại" };
+        }
+    } catch (error) {
+      console.log("error", error);
+      return { success: false, error };
+    }
+  };
+};

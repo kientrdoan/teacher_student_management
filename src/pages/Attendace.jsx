@@ -30,6 +30,7 @@ import {
 import { getAllStudentAction } from "../redux/actions/StudentAction";
 import { getAllLessonAction } from "../redux/actions/LessonAction";
 import { AiOutlineCheck, AiTwotoneEye } from "react-icons/ai";
+import { BsXLg } from "react-icons/bs";
 
 export default function Attendance() {
   const { id: course_id } = useParams();
@@ -113,6 +114,8 @@ export default function Attendance() {
     const res = await dispatch(AttendManualAction(payload));
     if (res.success) {
       dispatch(getAttendByCourseId(course_id));
+
+      setSelectedStudents((prev) => prev.filter((id) => id !== studentId));
     } else {
       messageApi.error("Dữ liệu không hợp lệ");
     }
@@ -141,6 +144,7 @@ export default function Attendance() {
     }
   };
 
+  const pendingIds = [];
   const data =
     students?.map((s) => {
       const fullName = s.user ? `${s.user.last_name} ${s.user.first_name}` : "";
@@ -171,11 +175,27 @@ export default function Attendance() {
           record[`${date}_image`] = attendForDate
             ? attendForDate.attendance_image
             : null;
+
+          if (
+            dayjs(date, "DD/MM/YYYY").isSame(today, "day") &&
+            attendForDate?.status === "Pending"
+          ) {
+            pendingIds.push(studentId);
+          }
         }
       });
-
+      // setSelectedStudents(record);
       return record;
     }) || [];
+
+  useEffect(() => {
+    if (pendingIds.length > 0) {
+      setSelectedStudents((prev) => {
+        const merged = new Set([...prev, ...pendingIds]);
+        return Array.from(merged);
+      });
+    }
+  }, [students, attends]);
 
   // 🔥 Thêm checkbox đầu bảng
   const rowSelection = {
@@ -279,6 +299,17 @@ export default function Attendance() {
               >
                 <AiOutlineCheck />
               </button>
+
+              <BsXLg
+                style={{ color: "green", fontSize: 16 }}
+                onClick={() =>
+                  handleManualAttend(
+                    record.studentId,
+                    lessonMap[date],
+                    "Absent"
+                  )
+                }
+              />
             </>
           );
         } else if (

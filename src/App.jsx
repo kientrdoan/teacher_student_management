@@ -17,6 +17,7 @@ import ScoreManagement from "./pages/ScoreManagement";
 import TimeTableSemester from "./pages/TimeTableSemester";
 import AttendManage from "./pages/AttendManage";
 import Attendace from "./pages/Attendace";
+import Password from "./pages/password";
 
 function App() {
   const dispatch = useDispatch();
@@ -65,6 +66,7 @@ function App() {
             <Route path="time-table-semester" element={<TimeTableSemester />} />
 
             <Route path="profile" element={<Profile />} />
+            <Route path="password" element={<Password />} />
             <Route path="time-table" element={<TimeTable />} />
             
             <Route path="courses" element={<Course />} />
