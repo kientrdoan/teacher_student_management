@@ -43,6 +43,23 @@ export const AttendAction = (payload) => {
   };
 };
 
+export const UpdateStateOpenAction = (payload) => {
+  return async (dispatch) => {
+    try {
+      const result = await attendService.updateStateOpen(payload);
+      if (result.status === 200 && result.data.status_code != 405) {
+        return { success: true, data: result.data.data };
+      }
+      else{
+        return { success: false, error: result.data.message};
+      }
+    } catch (error) {
+      console.log("error", error);
+      return { success: false, error };
+    }
+  };
+};
+
 
 export const AttendManualAction = (payload) => {
   return async (dispatch) => {

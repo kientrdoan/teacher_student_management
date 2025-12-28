@@ -13,6 +13,10 @@ export class AttendService extends BaseService {
     return this.post_token(`/admins/attendance/`, payload);
   };
 
+  updateStateOpen = (payload) => {
+    return this.put_token(`/teachers/attends/update-open`, payload);
+  };
+
   attendManual = (payload) => {
     return this.post_token(`/teachers/attends`, payload);
   };

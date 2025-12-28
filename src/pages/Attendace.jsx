@@ -29,6 +29,7 @@ import {
 } from "../redux/actions/AttendAction";
 import { getAllStudentAction } from "../redux/actions/StudentAction";
 import { getAllLessonAction } from "../redux/actions/LessonAction";
+import { UpdateStateOpenAction } from "../redux/actions/AttendAction";
 import { AiOutlineCheck, AiTwotoneEye } from "react-icons/ai";
 import { BsXLg } from "react-icons/bs";
 
@@ -54,6 +55,7 @@ export default function Attendance() {
   );
 
   const [attends, setAttends] = useState([]);
+  const [isOpenAttend, setIsOpenAttend] = useState(true);
 
   useEffect(() => {
     if (course_id) {
@@ -103,6 +105,17 @@ export default function Attendance() {
   //   }
   // };
 
+  useEffect(() => {
+    if (lessons && nearestDate) {
+      const lessonId = lessonMap[nearestDate];
+      const lesson = lessons.find((l) => l.id === lessonId);
+
+      if (typeof lesson?.is_open === "boolean") {
+        setIsOpenAttend(lesson.is_open);
+      }
+    }
+  }, [lessons, nearestDate]);
+
   const handleManualAttend = async (studentId, lessonId, status) => {
     const payload = {
       student_id: studentId,
@@ -141,6 +154,25 @@ export default function Attendance() {
       setOpenBulkModal(false);
     } else {
       messageApi.error("Dữ liệu không hợp lệ");
+    }
+  };
+
+  const handleToggleOpenAttend = async () => {
+    const lessonId = lessonMap[nearestDate];
+
+    const res = await dispatch(
+      UpdateStateOpenAction({
+        time_slot_id: lessonId,
+        is_open: !isOpenAttend,
+      })
+    );
+
+    if (res.success) {
+      messageApi.success(isOpenAttend ? "Đã tắt điểm danh" : "Đã mở điểm danh");
+      setIsOpenAttend(!isOpenAttend);
+      dispatch(getAllLessonAction(course_id));
+    } else {
+      messageApi.error("Không thể thay đổi trạng thái điểm danh");
     }
   };
 
@@ -276,7 +308,7 @@ export default function Attendance() {
           );
         } else if (date === today && status === "Pending") {
           return (
-            <div className="flex">
+            <div className='flex'>
               <button
                 className='bg-blue-500 text-white rounded h-[20px]'
                 onClick={() => {
@@ -442,6 +474,15 @@ export default function Attendance() {
           onClick={() => setOpenBulkModal(true)}
         >
           Điểm danh nhiều sinh viên ({selectedStudents.length})
+        </button>
+
+        <button
+          className={`px-4 py-2 rounded text-white ${
+            isOpenAttend ? "bg-red-600" : "bg-green-600"
+          }`}
+          onClick={handleToggleOpenAttend}
+        >
+          {isOpenAttend ? "Tắt điểm danh" : "Mở điểm danh"}
         </button>
       </div>
 
