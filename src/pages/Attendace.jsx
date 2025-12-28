@@ -276,7 +276,7 @@ export default function Attendance() {
           );
         } else if (date === today && status === "Pending") {
           return (
-            <>
+            <div className="flex">
               <button
                 className='bg-blue-500 text-white rounded h-[20px]'
                 onClick={() => {
@@ -288,7 +288,7 @@ export default function Attendance() {
               </button>
 
               <button
-                className='bg-blue-500 text-white rounded h-[20px] ml-2'
+                className='bg-blue-500 text-white rounded h-[20px] ml-2 mr-2'
                 onClick={async () => {
                   handleManualAttend(
                     record.studentId,
@@ -301,7 +301,7 @@ export default function Attendance() {
               </button>
 
               <BsXLg
-                style={{ color: "green", fontSize: 16 }}
+                style={{ color: "red", fontSize: 16 }}
                 onClick={() =>
                   handleManualAttend(
                     record.studentId,
@@ -310,7 +310,7 @@ export default function Attendance() {
                   )
                 }
               />
-            </>
+            </div>
           );
         } else if (
           date === today &&
